@@ -1,0 +1,1845 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Het Ritueel van Moed</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Cinzel:wght@300;400&display=swap');
+
+/* ══════════════════════════════════════
+   GEDEELD
+══════════════════════════════════════ */
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+html,body { width:100%; height:100%; overflow:hidden; font-family:'Cormorant Garamond',serif; -webkit-font-smoothing:antialiased; color:rgba(255,251,235,.88); }
+
+
+/* ── TOEGANGSSCHERM ── */
+#screen-gate {
+  position:fixed; inset:0; z-index:100;
+  transition:opacity 1.8s ease;
+}
+#screen-gate.hidden {
+  opacity:0; pointer-events:none;
+}
+#screen-ritual {
+  position:fixed; inset:0; z-index:1;
+  opacity:0; pointer-events:none;
+  transition:opacity 1.8s ease;
+}
+#screen-ritual.visible {
+  opacity:1; pointer-events:auto;
+}
+
+
+/* ══════════════════════════════════════
+   TOEGANGSSCHERM CSS
+══════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Cinzel:wght@300;400&display=swap');
+
+:root {
+  --gold:    #e2c14a;
+  --gold-55: rgba(226,193,74,.55);
+  --gold-12: rgba(226,193,74,.12);
+  --gold-28: rgba(226,193,74,.28);
+  --paper:   rgba(255,251,232,.08);
+  --border:  rgba(226,193,74,.26);
+  --text:    rgba(255,251,235,.88);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+html, body {
+  width:100%; height:100%;
+  overflow:hidden;
+  font-family:'Cormorant Garamond', serif;
+  -webkit-font-smoothing:antialiased;
+  color:var(--text);
+}
+
+/* ── ACHTERGROND ── */
+#gate-sky {
+  position:fixed; inset:0; z-index:0;
+  background:linear-gradient(to bottom,
+    #01030a 0%, #020818 16%, #030f22 32%,
+    #051628 42%, #071c34 48%, #04131f 60%,
+    #020c18 75%, #010811 88%, #010508 100%);
+}
+
+/* Subtiele gloedlaag horizon */
+#gate-glow {
+  position:fixed; inset:0; z-index:1; pointer-events:none;
+  background:linear-gradient(to bottom,
+    transparent 38%,
+    rgba(35,72,140,.05) 44%,
+    rgba(52,95,158,.10) 50%,
+    rgba(42,80,148,.06) 55%,
+    transparent 62%);
+}
+
+/* Waterlaag */
+#gate-water {
+  position:fixed; top:56%; left:0; right:0; bottom:0; z-index:1; pointer-events:none;
+  background:linear-gradient(to bottom,
+    rgba(5,18,42,.70) 0%,
+    rgba(3,13,32,.85) 30%,
+    rgba(2,9,22,.95)  70%,
+    rgba(1,5,14,.99) 100%);
+}
+
+/* Horizonlijn */
+#gate-horizon {
+  position:fixed; top:56%; left:0; right:0; height:1px; z-index:2; pointer-events:none;
+  background:linear-gradient(to right,
+    transparent 0%,
+    rgba(80,130,200,.14) 20%,
+    rgba(105,152,218,.26) 50%,
+    rgba(80,130,200,.14) 80%,
+    transparent 100%);
+}
+
+/* Maan */
+#gate-moon {
+  position:fixed; top:4%; left:50%;
+  transform:translateX(-50%);
+  z-index:1; pointer-events:none;  /* z-index 1: achter tekst (z-index:10) */
+}
+.gate-moon-atm {
+  position:absolute; border-radius:50%;
+  top:50%; left:50%; transform:translate(-50%,-50%);
+  animation:gateMoonBreathe 9s ease-in-out infinite;
+}
+.gate-moon-atm.xl { width:280px; height:280px;
+  background:radial-gradient(circle, rgba(200,220,255,.06) 0%, transparent 68%); }
+.gate-moon-atm.lg { width:180px; height:180px;
+  background:radial-gradient(circle, rgba(215,232,255,.11) 0%, transparent 72%); }
+.gate-moon-atm.sm { width:90px;  height:90px;
+  background:radial-gradient(circle, rgba(225,238,255,.16) 0%, transparent 75%); }
+@keyframes gateMoonBreathe { 0%,100%{opacity:.80} 50%{opacity:1} }
+
+/* Gibbeuze maan SVG */
+.gate-moon-svg {
+  position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  animation:gateMoonDiscPulse 9s ease-in-out infinite;
+}
+@keyframes gateMoonDiscPulse { 0%,100%{opacity:.88} 50%{opacity:1} }
+
+/* Maanreflectie */
+#gate-reflection {
+  position:fixed; top:56%; left:0; right:0; bottom:0; z-index:2; pointer-events:none;
+  background:linear-gradient(to bottom,
+    rgba(200,222,255,.22) 0%,
+    rgba(185,212,255,.10) 18%,
+    rgba(170,205,255,.03) 42%,
+    transparent 70%);
+  -webkit-mask-image:linear-gradient(to right,
+    transparent 0%, rgba(0,0,0,.3) 15%,
+    rgba(0,0,0,1) 33%, rgba(0,0,0,1) 67%,
+    rgba(0,0,0,.3) 85%, transparent 100%);
+  mask-image:linear-gradient(to right,
+    transparent 0%, rgba(0,0,0,.3) 15%,
+    rgba(0,0,0,1) 33%, rgba(0,0,0,1) 67%,
+    rgba(0,0,0,.3) 85%, transparent 100%);
+  animation:gReflShimmer 9s ease-in-out infinite;
+}
+@keyframes gReflShimmer { 0%,100%{opacity:.65} 50%{opacity:.95} }
+
+/* Vignette */
+#vig {
+  position:fixed; inset:0; z-index:3; pointer-events:none;
+  background:radial-gradient(ellipse 95% 95% at 50% 50%,
+    transparent 20%, rgba(1,4,9,.62) 100%);
+}
+
+/* Sterren */
+#gate-stars {
+  position:fixed; inset:0; z-index:2; pointer-events:none; opacity:.45;
+}
+.gst {
+  position:absolute; border-radius:50%;
+  background:rgba(255,250,228,1);
+  animation:gTwinkle var(--d,4s) ease-in-out infinite;
+  animation-delay:var(--dl,0s);
+}
+@keyframes gTwinkle {
+  0%,100%{ opacity:var(--lo,.08) }
+  50%    { opacity:var(--hi,.65) }
+}
+
+/* ── TOEGANGSPOORT ── */
+#gate {
+  position:fixed; inset:0; z-index:10;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:2rem;
+  /* Iets naar beneden duwen zodat content niet door de maan valt */
+  padding-top:22vh;
+}
+
+.gate-eyebrow {
+  font-family:'Cinzel',serif;
+  font-size:clamp(.82rem,2.8vw,1rem);
+  letter-spacing:.32em; text-transform:uppercase;
+  color:rgba(255,225,100,1);
+  text-shadow:0 0 18px rgba(226,193,74,.55);
+  margin-top:.9rem; margin-bottom:0; text-align:center;
+  opacity:0; animation:fadeUp 2s ease 1s forwards;
+}
+@keyframes breathe { 0%,100%{opacity:.50} 50%{opacity:.95} }
+
+.gate-title {
+  font-family:'Cinzel',serif;
+  font-size:clamp(1.6rem,6vw,3.2rem);
+  font-weight:300; letter-spacing:.06em;
+  color:var(--text);
+  text-align:center; line-height:1.2;
+  margin-bottom:0;
+  opacity:0; animation:fadeUp 2s ease .7s forwards;
+}
+.gate-title em {
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic; color:var(--gold);
+  display:block; font-size:.62em; letter-spacing:.14em;
+}
+
+.gate-line {
+  width:1px; height:52px; margin:2rem auto;
+  background:linear-gradient(to bottom, transparent, var(--gold-28), transparent);
+  opacity:0; animation:fadeIn 1.8s ease 1.2s forwards;
+}
+
+.gate-verse {
+  font-style:italic;
+  font-size:clamp(1.10rem,3.4vw,1.35rem);
+  color:rgba(255,225,100,.95);
+  text-shadow:0 0 14px rgba(226,193,74,.35);
+  text-align:center; line-height:2;
+  max-width:480px; margin-bottom:2.8rem;
+  opacity:0; animation:fadeUp 2s ease 1.4s forwards;
+}
+
+/* Codeinvoer */
+#code-wrap {
+  width:min(380px,92vw);
+  opacity:0; animation:fadeUp 2s ease 1.8s forwards;
+}
+
+#code-input {
+  width:100%;
+  background:rgba(255,251,232,.10);
+  border:none;
+  border-bottom:2px solid rgba(226,193,74,.70);
+  outline:none;
+  font-family:'Cinzel',serif;
+  font-size:clamp(1.1rem,4.5vw,1.4rem);
+  letter-spacing:.22em; text-transform:uppercase;
+  color:rgba(255,235,155,1);
+  text-align:center;
+  padding:1.2rem .5rem;
+  caret-color:var(--gold);
+  transition:border-color .4s, background .4s;
+  text-shadow:0 0 12px rgba(226,193,74,.35);
+}
+#code-input::placeholder {
+  color:rgba(226,193,74,.40);
+  letter-spacing:.16em;
+}
+#code-input:focus {
+  border-color:rgba(226,193,74,.95);
+  background:rgba(255,251,232,.14);
+}
+
+/* Foutmelding */
+#code-error {
+  font-family:'Cinzel',serif;
+  font-size:clamp(.72rem,2.6vw,.84rem);
+  letter-spacing:.22em; text-transform:uppercase;
+  color:rgba(220,130,90,.92);
+  text-align:center;
+  margin-top:.9rem;
+  height:1.4rem;
+  opacity:0; transition:opacity .5s ease;
+}
+#code-error.show { opacity:1; }
+
+/* Knop */
+#code-btn {
+  width:100%; margin-top:1.8rem;
+  font-family:'Cinzel',serif;
+  font-size:clamp(.88rem,3.4vw,1.05rem);
+  letter-spacing:.26em; text-transform:uppercase;
+  color:rgba(255,235,155,1);
+  background:rgba(226,193,74,.10);
+  border:1px solid rgba(226,193,74,.65);
+  padding:1.2rem 1.5rem; cursor:pointer;
+  min-height:58px;
+  text-shadow:0 0 12px rgba(226,193,74,.35);
+  transition:border-color .4s, box-shadow .4s, background .4s;
+  touch-action:manipulation;
+}
+#code-btn:hover, #code-btn:focus {
+  outline:none;
+  border-color:rgba(226,193,74,.95);
+  box-shadow:0 0 28px rgba(226,193,74,.16);
+  background:rgba(226,193,74,.16);
+}
+#code-btn:active { opacity:.75; }
+
+/* Overgang naar ritueel */
+#transition {
+  position:fixed; inset:0; z-index:100;
+  background:rgba(1,3,9,1);
+  opacity:0; pointer-events:none;
+  transition:opacity 1.8s ease;
+}
+#transition.fade { opacity:1; pointer-events:auto; }
+
+/* Animaties */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(14px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity:0; }
+  to   { opacity:1; }
+}
+
+@supports (padding-bottom:env(safe-area-inset-bottom)) {
+  #gate { padding-bottom:calc(2rem + env(safe-area-inset-bottom)); }
+}
+@media (max-width:480px) {
+  #code-input { letter-spacing:.22em; }
+}
+
+
+/* ══════════════════════════════════════
+   RITUEEL CSS
+══════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Cinzel:wght@300;400&display=swap');
+
+:root {
+  --gold:    #e2c14a;
+  --gold-55: rgba(226,193,74,.55);
+  --gold-12: rgba(226,193,74,.12);
+  --paper:   rgba(255,251,232,.08);
+  --border:  rgba(226,193,74,.26);
+  --text:    rgba(255,251,235,.88);
+  --sea-line: 60%;
+}
+
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+html,body { width:100%; height:100%; overflow:hidden; font-family:'Cormorant Garamond',serif; -webkit-font-smoothing:antialiased; color:var(--text); }
+
+#sky {
+  position:fixed; inset:0; z-index:0;
+  background:
+    radial-gradient(ellipse 60% 38% at 50% 16%,
+      rgba(50,70,105,.20) 0%,
+      rgba(20,35,65,.12) 35%,
+      transparent 70%),
+    linear-gradient(to bottom,
+      #00030a  0%,
+      #010716 24%,
+      #031126 42%,
+      #061b34 50%,
+      #08213f 56%,
+      #0b315f 60%,
+      #061c38 100%);
+}
+
+/* Schemering boven horizon — duidelijker zichtbaar */
+#glow {
+  position:fixed; inset:0; z-index:1; pointer-events:none;
+  background:linear-gradient(to bottom,
+    transparent 30%,
+    rgba(30,65,130,.06)  38%,
+    rgba(55,100,168,.15) 46%,
+    rgba(90,145,220,.28) 54%,
+    rgba(80,135,210,.24) 60%,
+    rgba(40,90,170,.10)  66%,
+    transparent 74%);
+}
+
+#moon { position:fixed; top:6%; left:50%; transform:translateX(-50%); z-index:2; pointer-events:none; }
+.moon-atm { position:absolute; border-radius:50%; top:50%; left:50%; transform:translate(-50%,-50%); animation:moonBreathe 9s ease-in-out infinite; }
+.moon-atm.xl { width:420px; height:420px; background:radial-gradient(circle, rgba(200,220,255,.07) 0%, rgba(185,210,255,.03) 35%, transparent 68%); animation-delay:.5s; }
+.moon-atm.lg { width:280px; height:280px; background:radial-gradient(circle, rgba(215,232,255,.12) 0%, rgba(200,220,255,.05) 40%, transparent 72%); }
+.moon-atm.sm { width:140px; height:140px; background:radial-gradient(circle, rgba(225,238,255,.16) 0%, rgba(210,228,255,.06) 45%, transparent 75%); }
+
+/* Sikkel/gibbeuze maan via clip-path en twee cirkels */
+.moon-disc {
+  position:absolute;
+  width:72px; height:72px;
+  top:50%; left:50%; transform:translate(-50%,-50%);
+  animation:moonDiscPulse 9s ease-in-out infinite;
+}
+@keyframes moonBreathe { 0%,100%{opacity:.80} 50%{opacity:1} }
+@keyframes moonDiscPulse { 0%,100%{opacity:.88} 50%{opacity:1} }
+
+/* Water — zichtbaar anders dan lucht: dieper en donkerder blauw */
+#water {
+  position:fixed; z-index:1; pointer-events:none;
+  top:var(--sea-line); left:0; right:0; bottom:0;
+  background:
+    linear-gradient(to bottom,
+      rgba(22,58,105,.78)  0%,
+      rgba(10,38,78,.88)  16%,
+      rgba(4,22,52,.95)   42%,
+      rgba(2,11,30,.98)   70%,
+      rgba(1,5,15,1)     100%);
+}
+
+/* Horizonlijn — duidelijker zichtbaar */
+#horizon {
+  position:fixed; z-index:5; pointer-events:none;
+  top:var(--sea-line); left:0; right:0; height:3px;
+  background:
+    linear-gradient(to right,
+      transparent 0%,
+      rgba(90,145,220,.18)  18%,
+      rgba(135,185,245,.55) 48%,
+      rgba(180,205,245,.62) 50%,
+      rgba(135,185,245,.55) 52%,
+      rgba(90,145,220,.18)  82%,
+      transparent 100%);
+  box-shadow:
+    0 0 18px rgba(105,160,230,.25),
+    0 0 42px rgba(70,120,210,.18);
+}
+
+/* Atmosferische gloed boven/onder horizon */
+#horizon-glow {
+  position:fixed; z-index:3; pointer-events:none;
+  top:calc(var(--sea-line) - 38px); left:0; right:0; height:76px;
+  background:
+    linear-gradient(to bottom,
+      transparent 0%,
+      rgba(55,105,180,.10) 35%,
+      rgba(90,145,220,.22) 52%,
+      rgba(35,85,160,.16)  65%,
+      transparent 100%);
+}
+
+/* Maanreflectie */
+#reflection {
+  position:fixed; z-index:2; pointer-events:none;
+  top:var(--sea-line); left:0; right:0; bottom:0;
+  background:
+    linear-gradient(to bottom,
+      rgba(205,230,255,.46) 0%,
+      rgba(160,205,255,.28) 13%,
+      rgba(95,155,230,.16)  30%,
+      rgba(45,95,170,.07)   55%,
+      transparent           82%);
+  -webkit-mask-image:linear-gradient(to right,
+    transparent 0%,
+    rgba(0,0,0,.12) 10%,
+    rgba(0,0,0,.55) 25%,
+    rgba(0,0,0,1)   40%,
+    rgba(0,0,0,1)   60%,
+    rgba(0,0,0,.55) 75%,
+    rgba(0,0,0,.12) 90%,
+    transparent 100%);
+  mask-image:linear-gradient(to right,
+    transparent 0%,
+    rgba(0,0,0,.12) 10%,
+    rgba(0,0,0,.55) 25%,
+    rgba(0,0,0,1)   40%,
+    rgba(0,0,0,1)   60%,
+    rgba(0,0,0,.55) 75%,
+    rgba(0,0,0,.12) 90%,
+    transparent 100%);
+  animation:reflShimmer 8s ease-in-out infinite;
+}
+/* Centrale lichtbaan */
+#reflection-core {
+  position:fixed; z-index:3; pointer-events:none;
+  top:var(--sea-line); left:0; right:0; bottom:0;
+  background:
+    linear-gradient(to bottom,
+      rgba(235,248,255,.55) 0%,
+      rgba(195,225,255,.30) 15%,
+      rgba(120,180,245,.14) 38%,
+      transparent           66%);
+  -webkit-mask-image:linear-gradient(to right,
+    transparent 0%,
+    transparent 37%,
+    rgba(0,0,0,.45) 45%,
+    rgba(0,0,0,.95) 50%,
+    rgba(0,0,0,.45) 55%,
+    transparent 63%,
+    transparent 100%);
+  mask-image:linear-gradient(to right,
+    transparent 0%,
+    transparent 37%,
+    rgba(0,0,0,.45) 45%,
+    rgba(0,0,0,.95) 50%,
+    rgba(0,0,0,.45) 55%,
+    transparent 63%,
+    transparent 100%);
+  animation:reflShimmer 6s ease-in-out infinite .8s;
+}
+@keyframes reflShimmer { 0%,100%{opacity:.82} 50%{opacity:1} }
+
+/* Zeegloed — verschijnt kort wanneer de fles door de zee wordt opgenomen */
+#sea-glow {
+  position:fixed; z-index:3; pointer-events:none;
+  top:var(--sea-line); left:0; right:0; height:18%;
+  opacity:0;
+  background:
+    radial-gradient(ellipse 26% 62% at 50% 8%,
+      rgba(230,210,145,.20) 0%,
+      rgba(215,188,100,.09) 34%,
+      rgba(200,170,80,.025) 58%,
+      transparent 78%);
+  transition:opacity 0s ease;
+}
+
+/* Golflagen — CSS-only, meerdere subtiele horizontale banen */
+#wave-layers {
+  position:fixed; z-index:2; pointer-events:none;
+  top:var(--sea-line); left:0; right:0; bottom:0;
+  overflow:hidden;
+}
+.wl {
+  position:absolute; left:-8%; right:-8%;
+  height:1px; border-radius:50%;
+  opacity:0;
+  animation:wlMove var(--ws,22s) ease-in-out infinite var(--wd,normal);
+  animation-delay:var(--wdl,0s);
+}
+@keyframes wlMove {
+  0%   { transform:translateX(0)  scaleX(1)    scaleY(1);   opacity:0;           }
+  8%   {                                                      opacity:var(--wa,.045); }
+  50%  { transform:translateX(var(--wmx,-2%)) scaleX(1.04) scaleY(1.8); opacity:calc(var(--wa,.045)*1.4); }
+  92%  {                                                      opacity:var(--wa,.045); }
+  100% { transform:translateX(0)  scaleX(1)    scaleY(1);   opacity:0;           }
+}
+
+/* Scheepjes op de horizon */
+#ships { position:fixed; z-index:3; pointer-events:none; top:calc(var(--sea-line) - 10px); left:0; right:0; height:20px; }
+
+#stars { position:fixed; inset:0; z-index:2; pointer-events:none; opacity:.55; transition:opacity 4s ease; }
+#stars.bright { opacity:1; }
+.bgstar { position:absolute; border-radius:50%; background:rgba(255,250,228,1); animation:twinkle var(--d,4s) ease-in-out infinite; animation-delay:var(--dl,0s); }
+@keyframes twinkle { 0%,100%{ opacity:var(--lo,.08) } 50%{ opacity:var(--hi,.65) } }
+
+#couragespace { position:fixed; inset:0; z-index:35; pointer-events:none; }
+.cstar { position:absolute; pointer-events:none; opacity:0; }
+.cstar .sha { position:absolute; border-radius:50%; top:50%; left:50%; transform:translate(-50%,-50%); width:135px; height:135px; background:radial-gradient(circle,rgba(226,193,74,.13) 0%,transparent 70%); animation:sPulse 4s ease-in-out infinite; }
+.cstar .shb { position:absolute; border-radius:50%; top:50%; left:50%; transform:translate(-50%,-50%); width:55px; height:55px; background:radial-gradient(circle,rgba(226,193,74,.32) 0%,rgba(226,193,74,.08) 55%,transparent 75%); animation:sPulse 4s ease-in-out infinite .4s; }
+.cstar .sray { position:absolute; top:50%; left:50%; width:1px; height:0; transform-origin:50% 0%; background:linear-gradient(to bottom,rgba(255,248,200,.65),transparent); animation:rayPulse 4s ease-in-out infinite; }
+.cstar .score { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:7px; height:7px; border-radius:50%; background:#fff9e0; box-shadow:0 0 8px 3px rgba(226,193,74,.80),0 0 20px 8px rgba(226,193,74,.30); animation:sPulse 4s ease-in-out infinite .2s; }
+@keyframes sPulse { 0%,100%{ opacity:.70; transform:translate(-50%,-50%) scale(1) } 50%{ opacity:1; transform:translate(-50%,-50%) scale(1.18) } }
+@keyframes rayPulse { 0%,100%{ height:20px; opacity:.42 } 50%{ height:34px; opacity:.82 } }
+
+#vig { position:fixed; inset:0; z-index:4; pointer-events:none; background:radial-gradient(ellipse 95% 95% at 50% 50%, transparent 20%, rgba(1,4,9,.60) 100%); }
+
+#stage {
+  position:fixed; inset:0; z-index:10;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding-top:12.2vh;
+}
+
+/* Fase 0: schrijven */
+#write {
+  width:min(620px,92vw);
+  display:flex; flex-direction:column; align-items:center;
+  opacity:1; transition:opacity 1.8s ease;
+  overflow-y:visible;
+  -webkit-overflow-scrolling:touch;
+  padding:0 .5rem;
+  position:relative; z-index:11;
+}
+.eyebrow { font-family:'Cinzel',serif; font-size:clamp(.80rem,2.8vw,1rem); letter-spacing:.44em; text-transform:uppercase; color:rgba(255,225,100,.95); text-shadow:0 0 14px rgba(226,193,74,.40); margin-bottom:.8rem; text-align:center; animation:breathe 5s ease-in-out infinite; }
+@keyframes breathe { 0%,100%{opacity:.60} 50%{opacity:1} }
+#paper {
+  width:100%;
+  background:rgba(6,14,28,.86);
+  border:1px solid var(--border);
+  padding:1.15rem 1.45rem 1rem;
+  position:relative;
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  box-shadow:0 8px 40px rgba(0,0,0,.50);
+}
+#paper::before { content:''; position:absolute; top:0; left:1.8rem; right:1.8rem; height:1px; background:linear-gradient(90deg,transparent,rgba(226,193,74,.44),transparent); }
+.salute { display:block; font-style:italic; font-size:clamp(1.08rem,3.4vw,1.25rem); color:rgba(255,225,100,.92); text-shadow:0 0 12px rgba(226,193,74,.30); margin-bottom:.5rem; line-height:1.4; }
+#msg { width:100%; background:none; border:none; outline:none; resize:none; height:96px; min-height:96px; max-height:96px; overflow-y:auto; font-family:'Cormorant Garamond',serif; font-size:clamp(1.12rem,3.6vw,1.28rem); color:rgba(255,242,195,.88); line-height:1.8; caret-color:var(--gold); position:relative; z-index:2; padding-right:4.5rem; }
+#msg::placeholder { color:rgba(255,210,80,.42); font-style:italic; }
+#msg:focus { color:rgba(255,248,220,.95); }
+.foot { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem; padding-top:.6rem; margin-top:.5rem; border-top:1px solid var(--gold-12); position:relative; z-index:3; }
+.anon { font-size:clamp(.88rem,2.8vw,1rem); color:rgba(255,225,100,.75); font-style:italic; }
+.anon b { color:rgba(255,225,100,.95); font-weight:400; }
+#btn { font-family:'Cinzel',serif; font-size:clamp(.78rem,2.6vw,.92rem); letter-spacing:.32em; text-transform:uppercase; color:rgba(255,225,100,1); text-shadow:0 0 12px rgba(226,193,74,.40); background:rgba(7,20,43,.72); border:1px solid rgba(226,193,74,.60); padding:.95rem 1.9rem; cursor:pointer; min-height:54px; min-width:148px; display:flex; align-items:center; justify-content:center; gap:.75rem; text-align:center; transition:border-color .4s,box-shadow .4s,letter-spacing .4s,background .4s; touch-action:manipulation; -webkit-tap-highlight-color:rgba(226,193,74,.12); }
+#btn:hover,#btn:focus { outline:none; border-color:rgba(226,193,74,.90); box-shadow:0 0 22px rgba(226,193,74,.16); letter-spacing:.40em; background:rgba(9,25,52,.82); }
+#btn:active { opacity:.72; }
+
+/* Kleine decoratieve fles IN het schrijfvlak */
+#paper-bottle {
+  position:absolute;
+  right:1.3rem;
+  bottom:5.2rem;
+  width:42px;
+  height:auto;
+  opacity:.52;
+  pointer-events:none;
+  z-index:1;
+  filter:drop-shadow(0 0 12px rgba(80,130,190,.20));
+  transition:opacity .4s ease, filter .6s ease;
+}
+
+/* Ink overlay: tijdelijke tekst-laag voor particle animatie */
+#ink-overlay {
+  position:absolute;
+  top:0; left:0; right:0; bottom:0;
+  pointer-events:none;
+  overflow:hidden;
+  z-index:3;
+  border-radius:inherit;
+}
+.ink-line {
+  position:absolute;
+  left:1.5rem; right:1.5rem;
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.05rem,3.4vw,1.18rem);
+  line-height:1.8;
+  color:rgba(255,248,215,.85);
+  white-space:pre-wrap;
+  transform-origin:right center;
+  will-change:transform,opacity;
+}
+
+/* Fase 1+: animatie */
+#anim { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; }
+
+/* ── ENVELOP SYSTEEM ── */
+#envelope-wrap {
+  position:absolute;
+  z-index:20;
+  display:flex; align-items:center; justify-content:center;
+  pointer-events:none;
+}
+
+#envelope {
+  position:relative;
+  width:220px;
+  height:148px;
+  opacity:0;
+  will-change:transform,opacity;
+  transform-style:preserve-3d;
+}
+
+/* Envelop body — ivoor/crème */
+.env-body {
+  position:absolute; inset:0;
+  background:linear-gradient(160deg,
+    rgba(252,248,235,1) 0%,
+    rgba(246,240,218,1) 55%,
+    rgba(238,230,205,1) 100%);
+  border-radius:2px;
+  box-shadow:
+    0 4px 24px rgba(0,0,0,.38),
+    0 1px 4px rgba(0,0,0,.22),
+    inset 0 0 0 1px rgba(200,180,120,.30);
+}
+
+/* Diagonale vouwlijnen — subtiele textuur */
+.env-body::before {
+  content:'';
+  position:absolute; inset:0;
+  background:
+    linear-gradient(135deg, rgba(180,160,100,.06) 0%, transparent 50%),
+    linear-gradient(225deg, rgba(180,160,100,.06) 0%, transparent 50%);
+}
+
+/* Flap bovenrand — V-vormige sluiting */
+.env-flap {
+  position:absolute;
+  top:0; left:0; right:0;
+  height:50%;
+  background:linear-gradient(175deg,
+    rgba(244,236,210,1) 0%,
+    rgba(234,224,196,1) 100%);
+  clip-path:polygon(0% 0%, 100% 0%, 50% 72%);
+  border-radius:2px 2px 0 0;
+  box-shadow:inset 0 -1px 0 rgba(160,138,80,.18);
+}
+
+/* Onderkant V punt */
+.env-bottom {
+  position:absolute;
+  bottom:0; left:0; right:0;
+  height:54%;
+  background:linear-gradient(5deg,
+    rgba(240,232,208,1) 0%,
+    rgba(248,242,222,1) 100%);
+  clip-path:polygon(0% 100%, 50% 18%, 100% 100%);
+}
+
+/* Zijvlakken */
+.env-left {
+  position:absolute;
+  top:18%; left:0; bottom:0;
+  width:50%;
+  background:linear-gradient(to right,
+    rgba(232,222,198,1) 0%,
+    rgba(244,236,214,1) 100%);
+  clip-path:polygon(0% 0%, 100% 28%, 100% 100%, 0% 100%);
+}
+.env-right {
+  position:absolute;
+  top:18%; right:0; bottom:0;
+  width:50%;
+  background:linear-gradient(to left,
+    rgba(232,222,198,1) 0%,
+    rgba(244,236,214,1) 100%);
+  clip-path:polygon(100% 0%, 0% 28%, 0% 100%, 100% 100%);
+}
+
+/* Waxzegel — diep rood, op het midden van de sluiting */
+.env-seal {
+  position:absolute;
+  left:50%; top:44%;
+  transform:translate(-50%,-50%);
+  width:32px; height:32px;
+  border-radius:50%;
+  background:radial-gradient(circle at 38% 35%,
+    rgba(185,28,28,1)  0%,
+    rgba(155,15,15,1)  42%,
+    rgba(120,8,8,1)    75%,
+    rgba(90,4,4,1)    100%);
+  box-shadow:
+    0 2px 8px rgba(120,8,8,.60),
+    0 0 0 1px rgba(90,4,4,.35),
+    inset 0 1px 2px rgba(220,80,80,.28);
+  z-index:2;
+}
+
+/* Monogram in het zegel — subtiele initiaal */
+.env-seal::after {
+  content:'M';
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Cinzel',serif;
+  font-size:13px; font-weight:400;
+  color:rgba(255,220,200,.55);
+  letter-spacing:0;
+  text-shadow:0 1px 2px rgba(80,0,0,.40);
+}
+
+/* Zegel glans */
+.env-seal::before {
+  content:'';
+  position:absolute;
+  top:4px; left:6px;
+  width:10px; height:6px;
+  border-radius:50%;
+  background:rgba(255,160,140,.18);
+  transform:rotate(-30deg);
+}
+
+#fles { position:absolute; opacity:0; z-index:22; will-change:transform,opacity; display:flex; flex-direction:column; align-items:center; }
+#bpaper { position:absolute; top:66px; left:50%; transform:translateX(-50%); width:19px; height:23px; border-radius:2px; background:rgba(255,251,232,0); transition:background 1.4s ease,box-shadow 1.4s ease; z-index:23; pointer-events:none; }
+#bpaper.lit { background:rgba(255,251,232,.26); box-shadow:0 0 14px 5px rgba(226,193,74,.28); }
+
+/* Eindfase */
+#endphase { position:fixed; inset:0; z-index:20; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 2s ease; padding:2rem; }
+#endphase.visible { opacity:1; pointer-events:auto; }
+.end-title {
+  font-family:'Cinzel',serif;
+  font-size:clamp(.90rem,3.6vw,1.15rem);
+  letter-spacing:.24em; text-transform:uppercase;
+  color:rgba(255,230,145,.95);
+  text-shadow:0 0 14px rgba(226,193,74,.40);
+  margin-bottom:2.8rem; text-align:center;
+  animation:breathe 5s ease-in-out infinite;
+}
+.end-choices {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:1.05rem;
+  width:100%;
+  max-width:440px;
+}
+.end-choice {
+  width:100%;
+  height:76px;
+  min-height:76px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  font-family:'Cinzel',serif;
+  font-size:clamp(.78rem,3vw,.98rem);
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:rgba(255,235,155,.96);
+  text-shadow:0 0 10px rgba(226,193,74,.28);
+  border:1px solid rgba(226,193,74,.58);
+  padding:.95rem 1.35rem;
+  cursor:pointer;
+  text-align:center;
+  line-height:1.35;
+  transition:border-color .4s,box-shadow .4s,color .4s,background .4s;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:rgba(226,193,74,.12);
+  box-shadow:inset 0 0 20px rgba(255,255,255,.018), 0 0 18px rgba(0,0,0,.20);
+}
+.end-choice:hover,.end-choice:focus {
+  outline:none;
+  border-color:rgba(226,193,74,.88);
+  box-shadow:0 0 22px rgba(226,193,74,.15), inset 0 0 22px rgba(255,255,255,.025);
+  color:rgba(255,245,190,1);
+}
+.end-choice.primary {
+  order:1;
+  background:linear-gradient(135deg, rgba(16,48,88,.92), rgba(6,18,42,.94));
+  border-color:rgba(226,193,74,.76);
+}
+.end-choice.secondary {
+  order:2;
+  background:linear-gradient(135deg, rgba(10,35,68,.90), rgba(5,15,34,.94));
+}
+.end-choice.quiet {
+  order:3;
+  background:linear-gradient(135deg, rgba(7,25,52,.88), rgba(3,10,24,.94));
+  border-color:rgba(226,193,74,.42);
+  color:rgba(226,193,74,.82);
+}
+.choice-main { display:block; }
+.choice-sub {
+  display:block;
+  margin-top:.24rem;
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(.82rem,2.7vw,.96rem);
+  letter-spacing:.04em;
+  text-transform:none;
+  font-style:italic;
+  color:rgba(255,248,218,.76);
+}
+
+/* Expert panel */
+#expert-panel { position:fixed; inset:0; z-index:21; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 2s ease; padding:2.5rem; }
+#expert-panel.visible { opacity:1; pointer-events:auto; }
+.expert-verse {
+  font-style:italic;
+  font-size:clamp(1.22rem,4vw,1.55rem);
+  color:rgba(255,248,225,.92);
+  text-shadow:0 0 20px rgba(226,193,74,.18);
+  line-height:1.95; text-align:center; max-width:400px; margin-bottom:3rem;
+}
+.expert-link {
+  display:inline-flex; align-items:center; justify-content:center;
+  font-family:'Cinzel',serif;
+  font-size:clamp(.78rem,3vw,.98rem);
+  letter-spacing:.22em; text-transform:uppercase;
+  color:rgba(255,230,145,.98);
+  text-shadow:0 0 10px rgba(226,193,74,.32);
+  text-decoration:none;
+  border:1px solid rgba(226,193,74,.62);
+  background:rgba(226,193,74,.08);
+  padding:1.2rem 2.2rem; min-height:56px;
+  transition:border-color .4s,box-shadow .4s,letter-spacing .4s;
+}
+.expert-link:hover { border-color:rgba(226,193,74,.88); box-shadow:0 0 22px rgba(226,193,74,.14); letter-spacing:.28em; }
+.expert-back { margin-top:2rem; font-family:'Cinzel',serif; font-size:clamp(.58rem,2vw,.72rem); letter-spacing:.32em; text-transform:uppercase; color:rgba(226,193,74,.45); background:none; border:none; cursor:pointer; padding:.5rem 1rem; min-height:48px; touch-action:manipulation; transition:color .4s; }
+.expert-back:hover { color:rgba(255,230,145,.75); }
+
+/* Verdieping panel */
+#deepen-panel { position:fixed; inset:0; z-index:21; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 2s ease; padding:2.5rem; }
+#deepen-panel.visible { opacity:1; pointer-events:auto; }
+.deepen-verse {
+  font-style:italic;
+  font-size:clamp(1.22rem,4vw,1.55rem);
+  color:rgba(255,248,225,.92);
+  text-shadow:0 0 20px rgba(226,193,74,.18);
+  line-height:1.95; text-align:center; max-width:420px; margin-bottom:3rem;
+}
+.deepen-link {
+  display:inline-flex; align-items:center; justify-content:center;
+  font-family:'Cinzel',serif;
+  font-size:clamp(.78rem,3vw,.98rem);
+  letter-spacing:.22em; text-transform:uppercase;
+  color:rgba(255,230,145,.98);
+  text-shadow:0 0 10px rgba(226,193,74,.32);
+  text-decoration:none;
+  border:1px solid rgba(226,193,74,.62);
+  background:rgba(226,193,74,.08);
+  padding:1.2rem 2.2rem; min-height:56px;
+  transition:border-color .4s,box-shadow .4s,letter-spacing .4s;
+}
+.deepen-link:hover { border-color:rgba(226,193,74,.88); box-shadow:0 0 22px rgba(226,193,74,.14); letter-spacing:.28em; }
+.deepen-back { margin-top:2rem; font-family:'Cinzel',serif; font-size:clamp(.58rem,2vw,.72rem); letter-spacing:.32em; text-transform:uppercase; color:rgba(226,193,74,.45); background:none; border:none; cursor:pointer; padding:.5rem 1rem; min-height:48px; touch-action:manipulation; transition:color .4s; }
+.deepen-back:hover { color:rgba(255,230,145,.75); }
+
+/* Stiltezin */
+#silence-line { position:fixed; bottom:8vh; left:50%; transform:translateX(-50%); z-index:22; pointer-events:none; font-style:italic; font-size:clamp(.88rem,2.8vw,1.08rem); color:rgba(255,251,235,0); text-align:center; white-space:nowrap; max-width:90vw; transition:color 2.5s ease; }
+
+/* Caption bij ster */
+#scap { position:fixed; z-index:36; pointer-events:none; font-family:'Cinzel',serif; font-size:clamp(.56rem,1.8vw,.68rem); letter-spacing:.46em; text-transform:uppercase; color:rgba(226,193,74,0); text-align:center; white-space:nowrap; max-width:88vw; }
+
+/* Stercode blok */
+#starcode-wrap {
+  position:fixed; z-index:36; pointer-events:none;
+  text-align:center; opacity:0;
+  transition:opacity 2s ease;
+}
+#starcode-title {
+  font-family:'Cinzel',serif;
+  font-size:clamp(1rem,4.2vw,1.35rem);
+  letter-spacing:.22em; text-transform:uppercase;
+  color:rgba(255,235,155,1);
+  text-shadow:0 0 16px rgba(226,193,74,.55), 0 0 34px rgba(226,193,74,.25);
+  display:block; margin-bottom:.6rem;
+}
+#starcode-num {
+  font-family:'Cinzel',serif;
+  font-size:clamp(.95rem,3.8vw,1.25rem);
+  letter-spacing:.12em; text-transform:uppercase;
+  color:rgba(255,248,218,1);
+  text-shadow:0 0 16px rgba(226,193,74,.50), 0 0 32px rgba(226,193,74,.22);
+  display:block; margin-bottom:1.2rem;
+}
+#starcode-copy {
+  font-family:'Cinzel',serif;
+  font-size:clamp(.72rem,2.8vw,.90rem);
+  letter-spacing:.16em; text-transform:uppercase;
+  color:rgba(255,235,155,.98);
+  background:rgba(226,193,74,.09);
+  border:1px solid rgba(226,193,74,.65);
+  padding:.75rem 1.25rem; cursor:pointer;
+  transition:color .4s,border-color .4s,background .4s;
+  pointer-events:auto;
+  min-height:48px;
+  text-shadow:0 0 10px rgba(226,193,74,.30);
+}
+#starcode-copy:hover { color:rgba(255,242,180,1); border-color:rgba(226,193,74,.88); background:rgba(226,193,74,.14); }
+#starcode-copy.copied { color:rgba(255,248,200,1); border-color:rgba(226,193,74,.90); }
+
+#restart { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%); font-family:'Cinzel',serif; font-size:clamp(.56rem,1.8vw,.68rem); letter-spacing:.40em; text-transform:uppercase; color:rgba(226,193,74,.25); background:none; border:none; cursor:pointer; opacity:0; transition:opacity 1.5s ease,color .4s; z-index:50; min-height:48px; padding:.5rem 1rem; touch-action:manipulation; }
+#restart:hover { color:rgba(226,193,74,.68); }
+
+@supports (padding-bottom:env(safe-area-inset-bottom)) {
+  #restart { bottom:calc(2rem + env(safe-area-inset-bottom)); }
+  #write   { padding-bottom:env(safe-area-inset-bottom); }
+}
+@media (max-width:480px) {
+  .foot { flex-direction:column; align-items:flex-start; }
+  #btn  { width:100%; text-align:center; }
+  .end-choices { gap:1rem; }
+  #scap,#silence-line { white-space:normal; }
+}
+
+
+</style>
+</head>
+<body>
+
+<!-- ════════════════ TOEGANGSSCHERM ════════════════ -->
+<div id="screen-gate">
+<div id="gate-sky"></div>
+<div id="gate-glow"></div>
+<div id="gate-water"></div>
+<div id="gate-horizon"></div>
+<div id="gate-reflection"></div>
+
+<!-- Maan -->
+<div id="gate-moon">
+  <div class="gate-moon-atm xl"></div>
+  <div class="gate-moon-atm lg"></div>
+  <div class="gate-moon-atm sm"></div>
+  <svg class="gate-moon-svg" width="68" height="68" viewBox="0 0 68 68"
+       xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">
+    <defs>
+      <radialGradient id="mFill" cx="38%" cy="34%" r="60%">
+        <stop offset="0%"  stop-color="rgba(255,254,248,1)"/>
+        <stop offset="22%" stop-color="rgba(248,252,255,.97)"/>
+        <stop offset="50%" stop-color="rgba(232,244,255,.80)"/>
+        <stop offset="78%" stop-color="rgba(210,230,255,.42)"/>
+        <stop offset="100%" stop-color="rgba(190,215,255,.04)"/>
+      </radialGradient>
+      <radialGradient id="mShad" cx="50%" cy="50%" r="50%">
+        <stop offset="0%"  stop-color="rgba(3,10,24,1)"/>
+        <stop offset="85%" stop-color="rgba(3,10,24,1)"/>
+        <stop offset="100%" stop-color="rgba(3,10,24,0)"/>
+      </radialGradient>
+    </defs>
+    <circle cx="34" cy="34" r="33" fill="url(#mFill)"/>
+    <circle cx="50" cy="28" r="31" fill="url(#mShad)" opacity=".93"/>
+  </svg>
+</div>
+
+<div id="gate-stars"></div>
+<div id="vig"></div>
+
+<!-- TOEGANGSPOORT -->
+<div id="gate">
+  <h1 class="gate-title">
+    Het Ritueel van Moed
+  </h1>
+  <p class="gate-eyebrow">Een digitale rituele ruimte</p>
+
+  <div class="gate-line"></div>
+
+  <p class="gate-verse">
+    Deze ruimte is voor lezers van Ida Rinsampessy.<br>
+    Voer de code in die je in jouw exemplaar vindt.
+  </p>
+
+  <div id="code-wrap">
+    <input
+      id="code-input"
+      type="text"
+      placeholder="jouw code"
+      autocomplete="off"
+      autocorrect="off"
+      autocapitalize="characters"
+      spellcheck="false"
+      maxlength="20"
+    />
+    <div id="code-error">Deze code is niet bekend</div>
+    <button id="code-btn">Betreed de ruimte</button>
+  </div>
+</div>
+
+<!-- Overgangsscherm -->
+<div id="transition"></div>
+</div>
+
+<!-- ════════════════ RITUEEL ════════════════ -->
+<div id="screen-ritual">
+<div id="sky"></div>
+<div id="glow"></div>
+<div id="water"></div>
+<div id="horizon-glow"></div>
+<div id="horizon"></div>
+<div id="reflection"></div>
+<div id="reflection-core"></div>
+
+<!-- Golflagen: meerdere subtiele horizontale banen -->
+<div id="wave-layers">
+  <!-- 14 lagen, elk eigen snelheid, fase, kleur en positie in de waterlaag -->
+  <div class="wl" style="top:2%;  background:linear-gradient(90deg,transparent,rgba(105,162,225,.115),transparent); --ws:28s; --wa:.115; --wmx:-1.5%; --wdl:0s;"></div>
+  <div class="wl" style="top:5%;  background:linear-gradient(90deg,transparent,rgba(100,158,222,.098),transparent); --ws:22s; --wa:.098; --wmx:2%;   --wdl:-4s;  --wd:reverse;"></div>
+  <div class="wl" style="top:9%;  background:linear-gradient(90deg,transparent,rgba(98,155,220,.122),transparent);  --ws:31s; --wa:.122; --wmx:-2%;  --wdl:-9s;"></div>
+  <div class="wl" style="top:14%; background:linear-gradient(90deg,transparent,rgba(95,152,218,.105),transparent);  --ws:19s; --wa:.105; --wmx:1.5%; --wdl:-2s;  --wd:reverse;"></div>
+  <div class="wl" style="top:19%; background:linear-gradient(90deg,transparent,rgba(92,148,215,.128),transparent);  --ws:25s; --wa:.128; --wmx:-1%;  --wdl:-7s;"></div>
+  <div class="wl" style="top:24%; background:linear-gradient(90deg,transparent,rgba(88,144,212,.100),transparent);  --ws:33s; --wa:.100; --wmx:2.5%; --wdl:-14s; --wd:reverse;"></div>
+  <div class="wl" style="top:30%; background:linear-gradient(90deg,transparent,rgba(85,140,210,.112),transparent);  --ws:21s; --wa:.112; --wmx:-2%;  --wdl:-1s;"></div>
+  <div class="wl" style="top:36%; background:linear-gradient(90deg,transparent,rgba(82,136,208,.090),transparent);  --ws:27s; --wa:.090; --wmx:1%;   --wdl:-11s; --wd:reverse;"></div>
+  <div class="wl" style="top:42%; background:linear-gradient(90deg,transparent,rgba(78,132,205,.098),transparent);  --ws:23s; --wa:.098; --wmx:-1.5%;--wdl:-5s;"></div>
+  <div class="wl" style="top:50%; background:linear-gradient(90deg,transparent,rgba(74,128,202,.082),transparent);  --ws:35s; --wa:.082; --wmx:2%;   --wdl:-18s; --wd:reverse;"></div>
+  <div class="wl" style="top:58%; background:linear-gradient(90deg,transparent,rgba(70,124,200,.070),transparent);  --ws:29s; --wa:.070; --wmx:-1%;  --wdl:-8s;"></div>
+  <div class="wl" style="top:67%; background:linear-gradient(90deg,transparent,rgba(66,120,198,.058),transparent);  --ws:24s; --wa:.058; --wmx:1.5%; --wdl:-13s; --wd:reverse;"></div>
+  <div class="wl" style="top:76%; background:linear-gradient(90deg,transparent,rgba(62,116,195,.048),transparent);  --ws:32s; --wa:.048; --wmx:-2%;  --wdl:-3s;"></div>
+  <div class="wl" style="top:86%; background:linear-gradient(90deg,transparent,rgba(58,112,192,.038),transparent);  --ws:18s; --wa:.038; --wmx:1%;   --wdl:-16s; --wd:reverse;"></div>
+</div>
+
+<div id="moon">
+  <div class="moon-atm xl"></div>
+  <div class="moon-atm lg"></div>
+  <div class="moon-atm sm"></div>
+  <!-- Gibbeuze maan: schaduwcirkel geclipped aan maanschijf zodat hij nooit buiten de cirkel uitsteekt -->
+  <svg class="moon-disc" width="74" height="74" viewBox="0 0 74 74"
+       xmlns="http://www.w3.org/2000/svg"
+       style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);overflow:visible;animation:moonDiscPulse 9s ease-in-out infinite;">
+    <defs>
+      <filter id="mBlur"><feGaussianBlur stdDeviation="1.2"/></filter>
+      <!-- Clip: alleen binnen de maanschijf -->
+      <clipPath id="moonClip">
+        <circle cx="37" cy="37" r="36"/>
+      </clipPath>
+      <!-- Verlicht oppervlak -->
+      <radialGradient id="moonFill" cx="36%" cy="32%" r="62%">
+        <stop offset="0%"   stop-color="rgba(255,254,248,1)"/>
+        <stop offset="20%"  stop-color="rgba(248,252,255,.96)"/>
+        <stop offset="48%"  stop-color="rgba(230,243,255,.78)"/>
+        <stop offset="76%"  stop-color="rgba(208,228,255,.42)"/>
+        <stop offset="100%" stop-color="rgba(188,212,255,.04)"/>
+      </radialGradient>
+      <!-- Schaduw die de donkere zijde van de maan vormt -->
+      <radialGradient id="moonShadow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%"   stop-color="rgba(3,10,22,1)"/>
+        <stop offset="82%"  stop-color="rgba(3,10,22,1)"/>
+        <stop offset="100%" stop-color="rgba(3,10,22,0)"/>
+      </radialGradient>
+    </defs>
+
+    <!-- Groep geclipped aan de maanschijf — niets kan er buiten uitsteken -->
+    <g clip-path="url(#moonClip)">
+      <!-- Verlichte maanschijf -->
+      <circle cx="37" cy="37" r="36" fill="url(#moonFill)" filter="url(#mBlur)"/>
+      <!-- Schaduwcirkel verschoven naar rechts: creëert sikkel/gibbeuze maan
+           Door clip-path kan hij nooit buiten de maanschijf zichtbaar zijn -->
+      <circle cx="52" cy="32" r="36" fill="url(#moonShadow)" opacity=".94"/>
+    </g>
+
+    <!-- Zachte buitenrand -->
+    <circle cx="37" cy="37" r="35.5" fill="none"
+            stroke="rgba(200,220,255,.12)" stroke-width="1"/>
+  </svg>
+</div>
+
+<!-- Statische scheepjes op horizon: verwijderd, vervangen door schoner silhouet -->
+<div id="ships">
+  <svg width="100%" height="18" viewBox="0 0 1000 18"
+       preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+    <!-- Scheepje 1: links, klein, donker silhouet romp + mast -->
+    <g transform="translate(255,11)" opacity=".22">
+      <path d="M-14 0 L-12,-4 L-2,-5 L2,-5 L12,-4 L14,0 Q8,3 -8,3Z" fill="#06111e"/>
+      <line x1="0" y1="-5" x2="0" y2="-13" stroke="#06111e" stroke-width="1"/>
+    </g>
+    <!-- Scheepje 2: rechts, nóg kleiner -->
+    <g transform="translate(698,12)" opacity=".15">
+      <path d="M-9 0 L-7,-3 L-1,-3.5 L1,-3.5 L7,-3 L9,0 Q5,2 -5,2Z" fill="#06111e"/>
+      <line x1="0" y1="-3.5" x2="0" y2="-9" stroke="#06111e" stroke-width=".8"/>
+    </g>
+  </svg>
+</div>
+
+<!-- Zeegloed — oplichten wanneer de fles wordt opgenomen -->
+<div id="sea-glow"></div>
+
+<div id="stars"></div>
+<div id="couragespace"></div>
+<div id="vig"></div>
+
+<div id="stage">
+  <!-- FASE 0: schrijven -->
+  <div id="write">
+    <p class="eyebrow">Het ritueel van moed</p>
+    <div id="paper">
+      <!-- Kleine fles rechtsonder in het schrijfvlak, boven de footer -->
+      <div id="paper-bottle">
+        <svg width="42" height="98" viewBox="0 0 56 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="pbG" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%"   stop-color="rgba(80,130,180,.70)"/>
+              <stop offset="100%" stop-color="rgba(35,75,130,.65)"/>
+            </linearGradient>
+            <linearGradient id="pbE" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%"   stop-color="rgba(140,190,240,.75)"/>
+              <stop offset="100%" stop-color="rgba(70,130,200,.18)"/>
+            </linearGradient>
+            <linearGradient id="pbK" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stop-color="rgba(210,175,80,.88)"/>
+              <stop offset="100%" stop-color="rgba(170,130,50,.78)"/>
+            </linearGradient>
+            <linearGradient id="pbS" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stop-color="rgba(200,230,255,.50)"/>
+              <stop offset="100%" stop-color="rgba(160,200,255,.00)"/>
+            </linearGradient>
+          </defs>
+          <rect x="21" y="4" width="14" height="24" rx="3.5" fill="url(#pbG)" stroke="url(#pbE)" stroke-width="1"/>
+          <rect x="22" y="0" width="12" height="7" rx="3" fill="url(#pbK)" stroke="rgba(226,193,74,.80)" stroke-width=".9"/>
+          <path d="M11 37 Q9 55 9 76 Q9 108 11 115 Q15 126 28 126 Q41 126 45 115 Q47 108 47 76 Q47 55 45 37 Q41 29 28 29 Q15 29 11 37Z"
+                fill="url(#pbG)" stroke="url(#pbE)" stroke-width="1"/>
+          <path d="M16 38 Q13 58 13 80 Q13 100 15 112" stroke="url(#pbS)" stroke-width="3.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <!-- Overlay voor tekst-particle animatie -->
+      <div id="ink-overlay"></div>
+
+      <span class="salute">Aan wie dit mag lezen,</span>
+      <textarea id="msg" rows="4"
+        placeholder="Schrijf hier jouw brief... Niemand weet wie je bent. Dit is jouw ruimte."
+      ></textarea>
+      <div class="foot">
+        <span class="anon">&#10022;&nbsp;Volledig <b>anoniem</b></span>
+        <button id="btn">
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none"
+               xmlns="http://www.w3.org/2000/svg"
+               style="display:inline-block;vertical-align:middle;margin-right:.6em;opacity:.80;">
+            <!-- Envelop omtrek -->
+            <rect x=".5" y=".5" width="15" height="11" rx="1.2"
+                  stroke="rgba(226,193,74,.75)" stroke-width=".9" fill="none"/>
+            <!-- Vouw-V bovenin -->
+            <path d="M.5 1.5 L8 7 L15.5 1.5"
+                  stroke="rgba(226,193,74,.65)" stroke-width=".9"
+                  stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+          De brief gaat in de fles
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FASE 1+: animatie -->
+  <div id="anim">
+
+    <!-- Envelop met waxzegel -->
+    <div id="envelope-wrap">
+      <div id="envelope">
+        <div class="env-left"></div>
+        <div class="env-right"></div>
+        <div class="env-bottom"></div>
+        <div class="env-body"></div>
+        <div class="env-flap"></div>
+        <div class="env-seal"></div>
+      </div>
+    </div>
+
+    <div id="fles">
+      <div id="bpaper"></div>
+      <svg width="56" height="130" viewBox="0 0 56 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Fles lichaam: donkerder, meer diepgroen-blauw glas gevoel -->
+          <linearGradient id="gG" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%"   stop-color="rgba(80,130,180,.72)"/>
+            <stop offset="40%"  stop-color="rgba(55,100,155,.60)"/>
+            <stop offset="100%" stop-color="rgba(35,75,130,.68)"/>
+          </linearGradient>
+          <!-- Rand -->
+          <linearGradient id="gE" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"   stop-color="rgba(140,190,240,.80)"/>
+            <stop offset="50%"  stop-color="rgba(100,160,220,.45)"/>
+            <stop offset="100%" stop-color="rgba(70,130,200,.20)"/>
+          </linearGradient>
+          <!-- Glans -->
+          <linearGradient id="gS" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stop-color="rgba(200,230,255,.55)"/>
+            <stop offset="60%"  stop-color="rgba(180,215,255,.18)"/>
+            <stop offset="100%" stop-color="rgba(160,200,255,.00)"/>
+          </linearGradient>
+          <!-- Kurk -->
+          <linearGradient id="gK" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stop-color="rgba(210,175,80,.90)"/>
+            <stop offset="100%" stop-color="rgba(170,130,50,.80)"/>
+          </linearGradient>
+          <filter id="gF" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="2" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <!-- Hals -->
+        <rect x="21" y="4" width="14" height="24" rx="3.5"
+              fill="url(#gG)" stroke="url(#gE)" stroke-width="1"/>
+        <!-- Kurk -->
+        <rect x="22" y="0" width="12" height="7" rx="3"
+              fill="url(#gK)" stroke="rgba(226,193,74,.85)" stroke-width=".9"/>
+        <!-- Romp — voller, minder transparant -->
+        <path d="M11 37 Q9 55 9 76 Q9 108 11 115 Q15 126 28 126 Q41 126 45 115 Q47 108 47 76 Q47 55 45 37 Q41 29 28 29 Q15 29 11 37Z"
+              fill="url(#gG)" stroke="url(#gE)" stroke-width="1" filter="url(#gF)"/>
+        <!-- Brede glansstreep links -->
+        <path d="M16 38 Q13 58 13 80 Q13 100 15 112" stroke="url(#gS)" stroke-width="4" stroke-linecap="round"/>
+        <!-- Smalle glansstreep -->
+        <path d="M20 36 Q18 55 18 76" stroke="rgba(210,235,255,.28)" stroke-width="1.5" stroke-linecap="round"/>
+        <!-- Bodem donkerder voor diepte -->
+        <ellipse cx="28" cy="118" rx="14" ry="4" fill="rgba(20,50,100,.35)"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- Caption bij ster -->
+<div id="scap">Jouw moed is gezien</div>
+
+<!-- Stercode -->
+<div id="starcode-wrap">
+  <span id="starcode-title">Jouw moed is gezien</span>
+  <span id="starcode-num">A star is born, 0007</span>
+  <button id="starcode-copy">Kopieer stercode</button>
+</div>
+
+<!-- Eindfase: keuze -->
+<div id="endphase">
+  <p class="end-title">Jouw moed is gezien</p>
+  <div class="end-choices">
+    <button class="end-choice primary" id="choiceDeepen">
+      <span class="choice-main">Ik wil verder lezen</span>
+      <span class="choice-sub">Ontdek de boeken van Ida</span>
+    </button>
+
+    <button class="end-choice secondary" id="choiceTalk">
+      <span class="choice-main">Ik wil praten met gelijkgestemden</span>
+      <span class="choice-sub">Words of Wholeness Readers</span>
+    </button>
+
+    <button class="end-choice quiet" id="choiceSilence">
+      <span class="choice-main">Ik laat het los in stilte</span>
+    </button>
+  </div>
+</div>
+
+<!-- Expert panel -->
+<div id="expert-panel">
+  <p class="expert-verse">
+    Je hoeft dit niet alleen te dragen.<br>
+    Soms is spreken<br>
+    de eerste vorm van heling.
+  </p>
+  <a href="#" class="expert-link">Zoek een expert</a>
+  <button class="expert-back" id="expertBack">Terug</button>
+</div>
+
+<!-- Verdieping panel -->
+<div id="deepen-panel">
+  <p class="deepen-verse">
+    Soms opent één brief<br>
+    een deur naar een groter inzicht.<br>
+    In mijn boeken vind je woorden<br>
+    voor wat vaak nog geen taal had.
+  </p>
+  <a href="#" class="deepen-link">Ontdek de boeken</a>
+  <button class="deepen-back" id="deepenBack">Terug</button>
+</div>
+
+<!-- Stiltezin -->
+<div id="silence-line">Dan mag de stilte het dragen.</div>
+
+<button id="restart">Nog een ritueel beginnen</button>
+</div>
+
+<script>
+'use strict';
+
+
+function showRitual() {
+  const gate   = document.getElementById('screen-gate');
+  const ritual = document.getElementById('screen-ritual');
+  gate.classList.add('hidden');
+  ritual.classList.add('visible');
+  setTimeout(() => { gate.style.display = 'none'; }, 2000);
+}
+
+
+/* ══════════════════════════════════════
+   TOEGANGS-SCRIPT
+══════════════════════════════════════ */
+
+'use strict';
+
+/* ── STERREN ── */
+(function() {
+  const c = document.getElementById('gate-stars');
+  const n = Math.min(100, Math.floor(window.innerWidth * window.innerHeight * .48 / 8000));
+  for (let i = 0; i < n; i++) {
+    const d  = document.createElement('div');
+    d.className = 'st';
+    const sz = Math.random() * .85 + .15;
+    d.style.cssText = [
+      `width:${sz}px`, `height:${sz}px`,
+      `left:${Math.random()*100}%`,
+      `top:${Math.random()*52}%`,
+      `--d:${3+Math.random()*5}s`,
+      `--dl:${-(Math.random()*5).toFixed(1)}s`,
+      `--lo:${(.05+Math.random()*.12).toFixed(2)}`,
+      `--hi:${(.30+Math.random()*.55).toFixed(2)}`
+    ].join(';');
+    c.appendChild(d);
+  }
+})();
+
+/* ── GELDIGE CODES ──
+   Voeg hier jouw editie-codes toe.
+   Elke string is hoofdletterongevoelig.
+   Gebruik sprekende codes die passen bij het boek.
+*/
+const VALID_CODES = [
+  'MOED1111',        // Editie 1 — 2026
+];
+
+/* ── LOGICA ── */
+const input  = document.getElementById('code-input');
+const btn    = document.getElementById('code-btn');
+const err    = document.getElementById('code-error');
+const trans  = document.getElementById('transition');
+
+// Enter-toets werkt ook
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter') verify();
+  // Foutmelding weghalen zodra gebruiker typt
+  err.classList.remove('show');
+});
+
+btn.addEventListener('click', verify);
+
+function verify() {
+  const val = input.value.trim().toUpperCase().replace(/\s+/g,'-');
+
+  if (!val) {
+    shake();
+    return;
+  }
+
+  const valid = VALID_CODES.some(c => c.toUpperCase() === val);
+
+  if (valid) {
+    onSuccess();
+  } else {
+    onFail();
+  }
+}
+
+function onSuccess() {
+  // Sla toegang op zodat ritueel-pagina weet dat de poort is gepasseerd
+  try { sessionStorage.setItem('moed_toegang', '1'); } catch(e) {}
+
+  btn.style.opacity = '.4';
+  btn.style.pointerEvents = 'none';
+  err.classList.remove('show');
+
+  // Fade naar zwart, dan redirect
+  trans.classList.add('fade');
+  setTimeout(() => {
+    showRitual();
+  }, 1900);
+}
+
+function onFail() {
+  err.classList.add('show');
+  shake();
+}
+
+function shake() {
+  const wrap = document.getElementById('code-wrap');
+  wrap.style.transition = 'transform .08s ease';
+  const steps = [6, -5, 4, -3, 2, 0];
+  steps.reduce((p, x) =>
+    p.then(() => new Promise(r => {
+      wrap.style.transform = `translateX(${x}px)`;
+      setTimeout(r, 80);
+    }))
+  , Promise.resolve()).then(() => {
+    wrap.style.transform = '';
+    wrap.style.transition = '';
+  });
+}
+
+
+/* ══════════════════════════════════════
+   RITUEEL-SCRIPT
+══════════════════════════════════════ */
+
+'use strict';
+
+/* ── TOEGANGSCONTROLE: niet nodig in gecombineerd bestand ── */
+
+let W = window.innerWidth;
+let H = window.innerHeight;
+
+/* ── ACHTERGROND STERREN ── */
+function buildBgStars() {
+  W = window.innerWidth; H = window.innerHeight;
+  const c = document.getElementById('stars');
+  c.innerHTML = '';
+  const n = Math.min(130, Math.floor(W * H * .48 / 7000));
+  for (let i = 0; i < n; i++) {
+    const d = document.createElement('div');
+    d.className = 'bgstar';
+    const sz = Math.random() * .9 + .2;
+    d.style.cssText = [`width:${sz}px`,`height:${sz}px`,`left:${Math.random()*100}%`,`top:${Math.random()*50}%`,`--d:${3+Math.random()*5}s`,`--dl:${-(Math.random()*6).toFixed(2)}s`,`--lo:${(.06+Math.random()*.12).toFixed(2)}`,`--hi:${(.35+Math.random()*.55).toFixed(2)}`].join(';');
+    c.appendChild(d);
+  }
+}
+buildBgStars();
+window.addEventListener('resize', buildBgStars, { passive:true });
+
+/* ── MOEDSTERREN ── */
+const placedStars = [];
+
+function pickStarPos() {
+  for (let a = 0; a < 30; a++) {
+    const x = W*(.10+Math.random()*.80), y = H*(.05+Math.random()*.36);
+    if (!placedStars.some(s => Math.hypot(s.x-x,s.y-y) < 88)) return {x,y};
+  }
+  return { x:W*(.10+Math.random()*.80), y:H*(.05+Math.random()*.36) };
+}
+
+function buildStarEl(x, y) {
+  const div = document.createElement('div');
+  div.className = 'cstar';
+  div.style.cssText = `left:${x}px;top:${y}px;transform:translate(-50%,-50%)`;
+  const sha=document.createElement('div'); sha.className='sha';
+  const shb=document.createElement('div'); shb.className='shb';
+  const core=document.createElement('div'); core.className='score';
+  for (let i=0;i<8;i++) {
+    const r=document.createElement('div'); r.className='sray';
+    r.style.cssText=`transform:translate(-50%,0) rotate(${i*45}deg);animation-delay:${(i*.18).toFixed(2)}s`;
+    div.appendChild(r);
+  }
+  div.appendChild(sha); div.appendChild(shb); div.appendChild(core);
+  return div;
+}
+
+/* ── STERCODE (localStorage teller, start bij 7) ── */
+function getNextStarNum() {
+  const STORAGE_KEY = 'ritueelStarCount';
+  const START       = 7;
+  let n;
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    n = stored !== null ? parseInt(stored, 10) : START;
+    if (isNaN(n) || n < START) n = START;
+  } catch(e) { n = START; }
+  const code = String(n).padStart(4, '0');
+  try { localStorage.setItem(STORAGE_KEY, String(n + 1)); } catch(e) {}
+  return code;
+}
+
+async function addCourageStar() {
+  const pos = pickStarPos();
+  placedStars.push(pos);
+  const el = buildStarEl(pos.x, pos.y);
+  document.getElementById('couragespace').appendChild(el);
+
+  const code    = getNextStarNum();
+  const codeStr = `A star is born, ${code}`;
+
+  const wrap = document.getElementById('starcode-wrap');
+  const num  = document.getElementById('starcode-num');
+  const copy = document.getElementById('starcode-copy');
+  num.textContent = codeStr;
+
+  // Positioneer stercode ALTIJD in bovenste derde van scherm, bij de ster
+  // maar nooit lager dan 42% van het scherm (zodat het eindkeuze-scherm niet overlapt)
+  const clampedY = Math.min(pos.y + 48, window.innerHeight * .40);
+  wrap.style.cssText = `left:${pos.x}px;top:${clampedY}px;transform:translateX(-50%);opacity:0;transition:none;`;
+
+  copy.classList.remove('copied');
+  copy.textContent = 'Kopieer stercode';
+  copy.onclick = () => {
+    try {
+      navigator.clipboard.writeText(codeStr).then(() => {
+        copy.textContent = 'Gekopieerd'; copy.classList.add('copied');
+        setTimeout(() => { copy.textContent='Kopieer stercode'; copy.classList.remove('copied'); }, 2500);
+      }).catch(() => fallbackCopy(codeStr, copy));
+    } catch(e) { fallbackCopy(codeStr, copy); }
+  };
+
+  // Fase A: ster wordt rustig geboren
+  await tween(2200, p => { el.style.opacity = String(lerp(0, 1, eOut(p))); });
+
+  // Stercode verschijnt duidelijk genoeg om te lezen en te kopiëren
+  await pause(350);
+  wrap.style.transition = 'opacity 1.4s ease';
+  wrap.style.opacity    = '1';
+
+  // Fase B: ster en stercode blijven bewust langer zichtbaar
+  // zodat de lezer de code kan zien en kopiëren.
+  await pause(7500);
+
+  // Fase C: stercode vervaagt pas daarna, vóór het keuzescherm verschijnt
+  wrap.style.transition = 'opacity 1.4s ease';
+  wrap.style.opacity    = '0';
+  await pause(900);
+
+  // Ster dimt naar permanente gloed en blijft aan de hemel staan
+  await tween(1800, p => { el.style.opacity = String(lerp(1, .50, eIO(p))); });
+  // Ster blijft op .50 — permanent, stercode is weg
+}
+
+function fallbackCopy(text, btn) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.cssText='position:fixed;opacity:0';
+  document.body.appendChild(ta); ta.select();
+  try {
+    document.execCommand('copy');
+    btn.textContent='Gekopieerd'; btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='Kopieer stercode'; btn.classList.remove('copied'); },2500);
+  } catch(e) { btn.textContent='Kopiëren mislukt'; }
+  document.body.removeChild(ta);
+}
+
+/* ── HELPERS ── */
+const lerp=(a,b,t)=>a+(b-a)*t, eOut=t=>1-Math.pow(1-t,3), eIn=t=>t*t*t, eIO=t=>t<.5?2*t*t:-1+(4-2*t)*t;
+function tween(ms,cb){return new Promise(done=>{const s=performance.now();const f=n=>{const p=Math.min(1,(n-s)/ms);cb(p);p<1?requestAnimationFrame(f):done()};requestAnimationFrame(f)});}
+const pause=ms=>new Promise(r=>setTimeout(r,ms));
+function css(el,props){if(typeof el==='string')el=document.getElementById(el);if(el)Object.assign(el.style,props);}
+
+/* ── RITUEEL ── */
+let busy = false;
+
+async function run(text) {
+  busy = true;
+
+  const write   = document.getElementById('write');
+  const anim    = document.getElementById('anim');
+  const env     = document.getElementById('envelope');
+  const fles    = document.getElementById('fles');
+  const bpaper  = document.getElementById('bpaper');
+
+  // Reset
+  env.style.opacity   = '0';
+  env.style.transform = '';
+  css(fles, { opacity:'0', transform:'translateY(0) scale(.88)' });
+  bpaper.classList.remove('lit');
+
+  // Positioneer envelope-wrap gecentreerd op scherm
+  const envWrap = document.getElementById('envelope-wrap');
+  envWrap.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;';
+
+  /* 1 — tekst wordt opgenomen, schrijfvlak vervaagt */
+  const msgEl  = document.getElementById('msg');
+  const bottle = document.getElementById('paper-bottle');
+  const overlay = document.getElementById('ink-overlay');
+  msgEl.disabled = true;
+
+  const paperEl   = document.getElementById('paper');
+  const paperRect = paperEl.getBoundingClientRect();
+  const bottleRect = bottle.getBoundingClientRect();
+  const targetX = bottleRect.left + bottleRect.width/2 - paperRect.left;
+  const targetY = bottleRect.top  + bottleRect.height/2 - paperRect.top;
+  const salute  = paperEl.querySelector('.salute');
+  const saluteH = salute ? salute.offsetHeight + 8 : 28;
+  const lineH   = parseFloat(getComputedStyle(msgEl).fontSize) * 1.8;
+
+  msgEl.style.opacity    = '0';
+  msgEl.style.transition = 'opacity .3s ease';
+
+  // Overlay-regels
+  overlay.innerHTML = '';
+  const words  = text.split(/\s+/).filter(Boolean);
+  const chunks = [];
+  let cur = [];
+  words.forEach(w => { cur.push(w); if (cur.length >= 6) { chunks.push(cur.join(' ')); cur = []; } });
+  if (cur.length) chunks.push(cur.join(' '));
+  if (!chunks.length) chunks.push('');
+
+  const lineEls = chunks.map((chunk, i) => {
+    const el = document.createElement('div');
+    el.className   = 'ink-line';
+    el.textContent = chunk;
+    el.style.top   = (saluteH + 4 + i * lineH) + 'px';
+    el.style.opacity = '1';
+    overlay.appendChild(el);
+    return el;
+  });
+
+  await pause(100);
+
+  for (let i = 0; i < lineEls.length; i++) {
+    const el    = lineEls[i];
+    const startY = parseFloat(el.style.top);
+    const dX = targetX - (paperRect.width / 2);
+    const dY = targetY - startY - lineH / 2;
+    await tween(650, p => {
+      const e = eIn(p);
+      el.style.transform = `translateX(${dX * e}px) translateY(${dY * e}px) scale(${lerp(1, .08, e)})`;
+      el.style.opacity   = String(lerp(1, 0, Math.pow(p, .65)));
+    });
+    await pause(i === lineEls.length - 1 ? 80 : 55);
+  }
+
+  // Kleine fles in paper licht op
+  bottle.style.opacity = '0.90';
+  bottle.style.filter  = 'drop-shadow(0 0 10px rgba(226,193,74,.75))';
+  await pause(420);
+  bottle.style.opacity    = '0';
+  bottle.style.transition = 'opacity .5s ease, filter .5s ease';
+  overlay.innerHTML = '';
+
+  // Schrijfvlak vervaagt
+  write.style.transition = 'opacity 1.3s ease';
+  write.style.opacity    = '0';
+  await pause(1350);
+  write.style.display = 'none';
+  msgEl.disabled = false;
+  msgEl.style.opacity = '';
+  bottle.style.filter  = '';
+  bottle.style.opacity = '.52';
+  bottle.style.transition = 'opacity .4s ease';
+  anim.style.opacity = '1';
+
+  /* 2 — envelop materialiseert */
+  await tween(2000, p => {
+    const e = eOut(p);
+    env.style.opacity   = String(e * .97);
+    env.style.transform = `translateY(${lerp(28, 0, e)}px) scale(${lerp(.88, 1, e)})`;
+  });
+
+  /* 3 — envelop blijft even zichtbaar — zegel goed zien */
+  await pause(1800);
+
+  /* 4 — fles verschijnt rechts van de envelop */
+  const offset = Math.min(90, W * .13);
+  css(fles, { transform:`translateX(${offset * 1.5}px) translateY(30px) scale(.85)` });
+  await tween(1600, p => {
+    const e = eOut(p);
+    css(fles, {
+      opacity  : String(e * .92),
+      transform: `translateX(${lerp(offset*1.5, offset*.6, e)}px) translateY(${lerp(30,0,e)}px) scale(${lerp(.85,1,e)})`
+    });
+    env.style.transform = `translateX(${lerp(0, -offset*.45, e)}px)`;
+  });
+  await pause(400);
+
+  /* 5 — envelop schuift naar de flessenhals */
+  await tween(1300, p => {
+    const ei = eIn(p);
+    env.style.opacity   = String(lerp(.97, 0, p));
+    env.style.transform = `translateX(${lerp(-offset*.45, offset*.9, ei)}px) translateY(${lerp(0, -48, ei)}px) scale(${lerp(1, .16, ei)})`;
+  });
+
+  /* 6 — fles licht op */
+  await pause(80);
+  bpaper.classList.add('lit');
+  await pause(1000);
+
+  /* 7 — fles drijft naar de maanreflectie */
+  const seaGlow = document.getElementById('sea-glow');
+  seaGlow.style.transition = 'none';
+  seaGlow.style.opacity    = '0';
+
+  await tween(8000, p => {
+    const bob = Math.sin(p * Math.PI * 6) * 3.5 * Math.max(0, 1 - p * 1.2);
+    const tx  = lerp(offset * .6, 0, eOut(p * .9));
+    const ty  = lerp(0, H * .22, eOut(p * .75)) + bob;
+    const sc  = lerp(1, .58, eOut(p * .85));
+    const ro  = Math.sin(p * Math.PI * 4) * 3.5 * Math.max(0, 1 - p * 1.1);
+    css(fles, {
+      opacity  : String(lerp(.92, .78, p * .5)),
+      transform: `translateX(${tx}px) translateY(${ty}px) scale(${sc}) rotate(${ro}deg)`
+    });
+    if (p > .60) {
+      const rp = (p - .60) / .40;
+      css('reflection',      { opacity:String(lerp(1, 1.18, eOut(rp))) });
+      css('reflection-core', { opacity:String(lerp(1, 1.22, eOut(rp))) });
+    }
+  });
+
+  /* 8 — zee ontvangt de fles */
+  seaGlow.style.transition = 'opacity 1.8s ease';
+  seaGlow.style.opacity    = '.62';
+
+  await tween(3800, p => {
+    const e  = eIn(p * .85);
+    const ty = H * .22 + lerp(0, 22, eIn(p));
+    css(fles, {
+      opacity  : String(lerp(.78, 0, eOut(p))),
+      transform: `translateX(0px) translateY(${ty}px) scale(${lerp(.58, .22, e)})`
+    });
+  });
+
+  await pause(500);
+  await tween(2200, p => {
+    const pulse = Math.sin(p * Math.PI);
+    css('reflection',      { opacity:String(1.08 + pulse * .16) });
+    css('reflection-core', { opacity:String(1.10 + pulse * .18) });
+  });
+
+  seaGlow.style.transition = 'opacity 2.4s ease';
+  seaGlow.style.opacity    = '0';
+  await pause(400);
+  css('reflection',      { opacity:'' });
+  css('reflection-core', { opacity:'' });
+
+  /* 9 — avond verdiept */
+  await pause(180);
+  document.getElementById('stars').classList.add('bright');
+  await tween(1500, p => {
+    const e = eOut(p);
+    css('water',           { opacity:String(lerp(1,.30,e)) });
+    css('horizon',         { opacity:String(lerp(1,.15,e)) });
+    css('reflection',      { opacity:String(lerp(1,.10,e)) });
+    css('reflection-core', { opacity:String(lerp(1,.08,e)) });
+    css('wave-layers',     { opacity:String(lerp(1,.12,e)) });
+  });
+
+  /* 10 — moedster */
+  await pause(120);
+  await addCourageStar();
+
+  /* 11 — eindfase */
+  await pause(250);
+  anim.style.opacity       = '0';
+  anim.style.pointerEvents = 'none';
+  document.getElementById('endphase').classList.add('visible');
+  busy = false;
+}
+
+/* ── KNOPPEN ── */
+
+document.getElementById('btn').addEventListener('click', () => {
+  const txt = document.getElementById('msg').value.trim();
+  if (txt.length < 4) {
+    const b=document.getElementById('btn');
+    b.style.borderColor='rgba(226,193,74,.85)'; b.style.boxShadow='0 0 18px rgba(226,193,74,.14)';
+    setTimeout(()=>{b.style.borderColor='';b.style.boxShadow='';},750); return;
+  }
+  if (!busy) run(txt);
+});
+
+document.getElementById('restart').addEventListener('click', doRestart);
+document.getElementById('choiceTalk').addEventListener('click', doChoiceTalk);
+document.getElementById('choiceSilence').addEventListener('click', doChoiceSilence);
+document.getElementById('choiceDeepen').addEventListener('click', doChoiceDeepen);
+document.getElementById('expertBack').addEventListener('click', () => {
+  css('expert-panel',{opacity:'0',pointerEvents:'none'});
+  document.getElementById('expert-panel').classList.remove('visible');
+  const ep=document.getElementById('endphase');
+  ep.style.opacity='1'; ep.style.pointerEvents='auto'; ep.classList.add('visible');
+});
+document.getElementById('deepenBack').addEventListener('click', () => {
+  css('deepen-panel',{opacity:'0',pointerEvents:'none'});
+  document.getElementById('deepen-panel').classList.remove('visible');
+  const ep=document.getElementById('endphase');
+  ep.style.opacity='1'; ep.style.pointerEvents='auto'; ep.classList.add('visible');
+});
+
+
+async function doChoiceTalk() {
+  const ep=document.getElementById('endphase');
+  ep.style.opacity='0'; ep.style.pointerEvents='none';
+  await pause(1000); ep.classList.remove('visible');
+  document.getElementById('expert-panel').classList.add('visible');
+}
+
+/* ── KEUZE: STILTE ── */
+async function doChoiceSilence() {
+  const ep=document.getElementById('endphase');
+  ep.style.transition='opacity 1.8s ease'; ep.style.opacity='0'; ep.style.pointerEvents='none';
+  await pause(1900); ep.classList.remove('visible');
+  const sl=document.getElementById('silence-line');
+  sl.style.transition='color 2.5s ease'; sl.style.color='rgba(255,251,235,.40)';
+  await pause(4500);
+  sl.style.transition='color 2.5s ease'; sl.style.color='rgba(255,251,235,0)';
+  await pause(2600);
+  css('restart',{opacity:'.20'});
+}
+
+/* ── KEUZE: VERDIEPEN ── */
+async function doChoiceDeepen() {
+  const ep=document.getElementById('endphase');
+  ep.style.opacity='0'; ep.style.pointerEvents='none';
+  await pause(1000); ep.classList.remove('visible');
+  document.getElementById('deepen-panel').classList.add('visible');
+}
+
+/* ── RESTART ── */
+async function doRestart() {
+  css('restart',{opacity:'0'});
+  ['endphase','expert-panel','deepen-panel'].forEach(id=>{css(id,{opacity:'0',pointerEvents:'none'});document.getElementById(id).classList.remove('visible');});
+  css('silence-line',{color:'rgba(255,251,235,0)'});
+  document.getElementById('stars').classList.remove('bright');
+  // Reset envelop
+  const env = document.getElementById('envelope');
+  if (env) { env.style.opacity='0'; env.style.transform=''; }
+  ['water','horizon','reflection','reflection-core','wave-layers'].forEach(id=>{const el=document.getElementById(id); if(el) el.style.opacity='';});
+  css('starcode-wrap',{opacity:'0',transition:'none'});
+  // Reset zeegloed
+  const sg = document.getElementById('sea-glow');
+  if (sg) { sg.style.transition='none'; sg.style.opacity='0'; }
+  const anim=document.getElementById('anim');
+  anim.style.opacity='0'; anim.style.pointerEvents='none';
+  await pause(400);
+  const wp=document.getElementById('write');
+  wp.style.display='flex'; wp.style.transition='opacity 0s'; wp.style.opacity='0';
+  document.getElementById('msg').value='';
+  await pause(60);
+  wp.style.transition='opacity 1.8s ease'; wp.style.opacity='1';
+  anim.style.opacity='1'; busy=false;
+}
+
+
+</script>
+</body>
+</html>
