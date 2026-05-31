@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>Activeer Ida's Wereld</title>
+
+  <!-- A-Frame & AR.js -->
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+  <style>
+    /* ── Reset & basis ─────────────────────────────────────── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #000;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    /* ── Laadscherm ────────────────────────────────────────── */
+    #loading-screen {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      gap: 20px;
+      padding: 30px;
+      text-align: center;
+    }
+
+    #loading-screen h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+    }
+
+    #loading-screen p {
+      font-size: 0.95rem;
+      color: #aaa;
+      line-height: 1.6;
+      max-width: 320px;
+    }
+
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 4px solid rgba(255,255,255,0.15);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Videokeuze overlay ─────────────────────────────────── */
+    #video-menu {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      z-index: 8000;
+      overflow-y: auto;
+      padding: 24px 16px 40px;
+    }
+
+    #video-menu.visible { display: flex; }
+
+    #video-menu h2 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    #video-menu p.subtitle {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .video-btn {
+      width: 100%;
+      max-width: 420px;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.2s, border-color 0.2s;
+      color: #fff;
+    }
+
+    .video-btn:hover, .video-btn:active {
+      background: #2a2a2a;
+      border-color: #666;
+    }
+
+    .video-btn .num {
+      font-size: 0.72rem;
+      color: #666;
+      display: block;
+      margin-bottom: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .video-btn .title {
+      font-size: 0.98rem;
+      font-weight: 600;
+    }
+
+    /* ── AR-scène ───────────────────────────────────────────── */
+    a-scene {
+      position: fixed;
+      inset: 0;
+    }
+
+    /* ── HUD: bovenste balk ─────────────────────────────────── */
+    #hud {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(6px);
+      z-index: 7000;
+    }
+
+    #hud.visible { display: flex; }
+
+    #hud-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      max-width: 220px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #btn-change {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.8rem;
+      padding: 6px 12px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* ── Marker-hint ────────────────────────────────────────── */
+    #marker-hint {
+      position: fixed;
+      bottom: 36px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 24px;
+      padding: 10px 22px;
+      font-size: 0.82rem;
+      color: #ddd;
+      white-space: nowrap;
+      display: none;
+      z-index: 7000;
+      pointer-events: none;
+    }
+
+    #marker-hint.visible { display: block; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     LAADSCHERM
+═══════════════════════════════════════════════════════════ -->
+<div id="loading-screen">
+  <h1>IDA</h1>
+  <div class="spinner"></div>
+  <p>Activeer Ida's wereld.<br>Even geduld terwijl de AR-omgeving wordt geladen…</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     VIDEOKEUZE MENU
+═══════════════════════════════════════════════════════════ -->
+<div id="video-menu">
+  <h2>Kies een beleving</h2>
+  <p class="subtitle">Selecteer een video — richt daarna je camera op de IDA-marker</p>
+
+  <button class="video-btn" data-src="V1.mp4" data-title="Welkom">
+    <span class="num">Intro</span>
+    <span class="title">Welkom</span>
+  </button>
+  <button class="video-btn" data-src="V2.mp4" data-title="Hoofd en hart">
+    <span class="num">Hoofdstuk 2</span>
+    <span class="title">Hoofd en hart</span>
+  </button>
+  <button class="video-btn" data-src="V3.mp4" data-title="Het verschil tussen je hoofd en je hart">
+    <span class="num">Hoofdstuk 3</span>
+    <span class="title">Het verschil tussen je hoofd en je hart</span>
+  </button>
+  <button class="video-btn" data-src="V4.mp4" data-title="Zielafspraken en doelen">
+    <span class="num">Hoofdstuk 4</span>
+    <span class="title">Zielafspraken en doelen</span>
+  </button>
+  <button class="video-btn" data-src="V5.mp4" data-title="Zelfliefde en Goddelijke verbinding">
+    <span class="num">Hoofdstuk 5</span>
+    <span class="title">Zelfliefde en Goddelijke verbinding</span>
+  </button>
+  <button class="video-btn" data-src="V6.mp4" data-title="Tussen twee werelden">
+    <span class="num">Hoofdstuk 6</span>
+    <span class="title">Tussen twee werelden</span>
+  </button>
+  <button class="video-btn" data-src="V7.mp4" data-title="De prijs van de stilte">
+    <span class="num">Hoofdstuk 7</span>
+    <span class="title">De prijs van de stilte</span>
+  </button>
+  <button class="video-btn" data-src="V8.mp4" data-title="Veerkracht">
+    <span class="num">Hoofdstuk 8</span>
+    <span class="title">Veerkracht</span>
+  </button>
+  <button class="video-btn" data-src="V9.mp4" data-title="De kracht van vergeving">
+    <span class="num">Hoofdstuk 9</span>
+    <span class="title">De kracht van vergeving</span>
+  </button>
+  <button class="video-btn" data-src="V10.mp4" data-title="Spirituele Symbolen">
+    <span class="num">Hoofdstuk 10</span>
+    <span class="title">Spirituele Symbolen</span>
+  </button>
+  <button class="video-btn" data-src="Slotwoord.mp4" data-title="Slotwoord">
+    <span class="num">Afsluiting</span>
+    <span class="title">Slotwoord</span>
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     HUD (bovenste balk tijdens AR)
+═══════════════════════════════════════════════════════════ -->
+<div id="hud">
+  <span id="hud-title">—</span>
+  <button id="btn-change">Andere video</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MARKER HINT
+═══════════════════════════════════════════════════════════ -->
+<div id="marker-hint">Richt je camera op de IDA-marker</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     A-FRAME AR SCÈNE
+═══════════════════════════════════════════════════════════ -->
+<a-scene
+  id="ar-scene"
+  embedded
+  arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; patternRatio: 0.75;"
+  renderer="logarithmicDepthBuffer: true; colorManagement: true;"
+  vr-mode-ui="enabled: false"
+  loading-screen="enabled: false"
+>
+
+  <!-- IDA-marker -->
+  <a-marker
+    id="ida-marker"
+    type="pattern"
+    url="assets/ida_marker.patt?v=2"
+    smooth="true"
+    smoothCount="10"
+    smoothTolerance="0.01"
+    smoothThreshold="5"
+  >
+    <!-- Video-vlak boven de marker (16:9 verhouding) -->
+    <a-video
+      id="ar-video"
+      src="#ar-video-asset"
+      width="1.8"
+      height="1.0"
+      position="0 0.6 0"
+      rotation="-90 0 0"
+    ></a-video>
+  </a-marker>
+
+  <!-- Video asset (wordt dynamisch bijgewerkt via JS) -->
+  <a-assets>
+    <video
+      id="ar-video-asset"
+      preload="auto"
+      playsinline
+      webkit-playsinline
+      crossorigin="anonymous"
+      loop="false"
+    ></video>
+  </a-assets>
+
+  <a-entity camera></a-entity>
+
+</a-scene>
+
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════════ -->
+<script>
+  // ── DOM-elementen ────────────────────────────────────────
+  const loadingScreen = document.getElementById('loading-screen');
+  const videoMenu     = document.getElementById('video-menu');
+  const hud           = document.getElementById('hud');
+  const hudTitle      = document.getElementById('hud-title');
+  const btnChange     = document.getElementById('btn-change');
+  const markerHint    = document.getElementById('marker-hint');
+  const videoAsset    = document.getElementById('ar-video-asset');
+  const arVideoEl     = document.getElementById('ar-video');
+  const idaMarker     = document.getElementById('ida-marker');
+  const videoBtns     = document.querySelectorAll('.video-btn');
+
+  let selectedSrc   = null;
+  let markerVisible = false;
+
+  // ── Wacht tot A-Frame geladen is ────────────────────────
+  document.querySelector('a-scene').addEventListener('loaded', () => {
+    loadingScreen.style.display = 'none';
+    showVideoMenu();
+  });
+
+  // Fallback: verberg laadscherm na 5 seconden
+  setTimeout(() => {
+    if (loadingScreen.style.display !== 'none') {
+      loadingScreen.style.display = 'none';
+      showVideoMenu();
+    }
+  }, 5000);
+
+  // ── Video menu tonen ─────────────────────────────────────
+  function showVideoMenu() {
+    videoMenu.classList.add('visible');
+    hud.classList.remove('visible');
+    markerHint.classList.remove('visible');
+    // Stop eventueel lopende video
+    videoAsset.pause();
+    videoAsset.src = '';
+  }
+
+  // ── Video selecteren ─────────────────────────────────────
+  videoBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedSrc = btn.dataset.src;
+      const title = btn.dataset.title;
+
+      // Laad de video in het asset-element
+      videoAsset.src = selectedSrc;
+      videoAsset.load();
+
+      // Bijwerken HUD
+      hudTitle.textContent = title;
+
+      // Menu verbergen, HUD en hint tonen
+      videoMenu.classList.remove('visible');
+      hud.classList.add('visible');
+      markerHint.classList.add('visible');
+    });
+  });
+
+  // ── "Andere video" knop ──────────────────────────────────
+  btnChange.addEventListener('click', () => {
+    showVideoMenu();
+  });
+
+  // ── Marker gevonden → video starten ─────────────────────
+  idaMarker.addEventListener('markerFound', () => {
+    markerVisible = true;
+    markerHint.classList.remove('visible');
+
+    if (selectedSrc && videoAsset.paused) {
+      // iOS vereist user-gesture; de markerFound-event telt als zodanig
+      videoAsset.play().catch(err => {
+        console.warn('Video autoplay geblokkeerd:', err);
+      });
+    }
+  });
+
+  // ── Marker verloren → video pauzeren ────────────────────
+  idaMarker.addEventListener('markerLost', () => {
+    markerVisible = false;
+    if (!videoAsset.paused) {
+      videoAsset.pause();
+    }
+    if (selectedSrc) {
+      markerHint.classList.add('visible');
+    }
+  });
+
+  // ── Video afgelopen → hint tonen ────────────────────────
+  videoAsset.addEventListener('ended', () => {
+    markerHint.classList.add('visible');
+  });
+</script>
+
+</body>
+</html>
