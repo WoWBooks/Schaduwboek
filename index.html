@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>DEBUG — Ida's Wereld</title>
+
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: monospace; background: #000; color: #fff; overflow: hidden; }
+    canvas { pointer-events: none !important; }
+    a-scene { pointer-events: none !important; }
+
+    /* ── DEBUG LOG (bovenin, altijd zichtbaar) ── */
+    #debug-log {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 99999; background: rgba(0,0,0,0.85);
+      padding: 10px 12px; font-size: 0.78rem; line-height: 1.7;
+      color: #0f0; pointer-events: none; max-height: 50vh; overflow-y: auto;
+    }
+    #debug-log .err  { color: #f55; }
+    #debug-log .warn { color: #fa0; }
+    #debug-log .ok   { color: #0f0; }
+    #debug-log .info { color: #8cf; }
+
+    /* ── TAP OVERLAY ── */
+    #tap-overlay {
+      position: fixed; inset: 0; z-index: 99998; pointer-events: auto;
+      display: none; flex-direction: column; align-items: center;
+      justify-content: flex-end; padding-bottom: 60px;
+      background: transparent; touch-action: manipulation; cursor: pointer;
+    }
+    #tap-overlay.visible { display: flex; }
+    #tap-label {
+      background: rgba(255,255,255,0.97); color: #000; border-radius: 30px;
+      padding: 16px 36px; font-size: 1.05rem; font-weight: 700;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+      pointer-events: none; user-select: none;
+    }
+
+    /* ── MARKER HINT ── */
+    #marker-hint {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 24px; padding: 10px 24px; font-size: 0.82rem; color: #ddd;
+      white-space: nowrap; display: none; z-index: 70000; pointer-events: none;
+    }
+    #marker-hint.visible { display: block; }
+
+    /* ── AR.JS dialogs verbergen ── */
+    .a-dialog, .a-dialog-allow-button, .a-dialog-deny-button,
+    [class*="a-dialog"], [id*="a-dialog"] {
+      display: none !important; visibility: hidden !important;
+      pointer-events: none !important; opacity: 0 !important;
+    }
+  </style>
+</head>
+<body>
+
+<!-- DEBUG LOG (altijd zichtbaar bovenin) -->
+<div id="debug-log">
+  <div class="info">⏳ Pagina geladen, wacht op A-Frame…</div>
+</div>
+
+<!-- MARKER HINT -->
+<div id="marker-hint" class="visible">Richt je camera op de Hiro-marker</div>
+
+<!-- GELUID KNOP (verborgen tot video start) -->
+<button id="sound-btn" style="display:none; position:fixed; bottom:80px; left:50%; transform:translateX(-50%); z-index:99997; background:rgba(255,255,255,0.95); color:#000; border:none; border-radius:30px; padding:14px 30px; font-size:1rem; font-weight:700; pointer-events:auto; touch-action:manipulation; cursor:pointer; box-shadow:0 4px 20px rgba(0,0,0,0.4); white-space:nowrap;">🔊 Zet geluid aan</button>
+
+<!-- TAP OVERLAY -->
+<div id="tap-overlay">
+  <div id="tap-label">▶ Tik om te starten</div>
+</div>
+
+<!-- A-FRAME SCÈNE -->
+<a-scene
+  id="ar-scene"
+  embedded
+  arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+  renderer="logarithmicDepthBuffer: true; colorManagement: true;"
+  vr-mode-ui="enabled: false"
+  loading-screen="enabled: false"
+>
+  <a-assets>
+    <video
+      id="ar-video-asset"
+      src="intro.mp4"
+      preload="auto"
+      playsinline
+      webkit-playsinline
+      crossorigin="anonymous"
+      loop="false"
+    ></video>
+  </a-assets>
+
+  <a-marker
+    id="hiro-marker"
+    preset="hiro"
+    smooth="true"
+    smoothCount="10"
+    smoothTolerance="0.01"
+    smoothThreshold="5"
+  >
+    <!-- DEBUG: position="0 0 0", visible="true", klein formaat -->
+    <a-video
+      id="ar-video"
+      src="#ar-video-asset"
+      width="1.2"
+      height="0.8"
+      position="0 0 0"
+      rotation="-90 0 0"
+      visible="true"
+    ></a-video>
+  </a-marker>
+
+  <a-entity camera></a-entity>
+</a-scene>
+
+<script>
+  const debugLog   = document.getElementById('debug-log');
+  const tapOverlay = document.getElementById('tap-overlay');
+  const markerHint = document.getElementById('marker-hint');
+  const videoAsset = document.getElementById('ar-video-asset');
+  const arVideoEl  = document.getElementById('ar-video');
+  const hiroMarker = document.getElementById('hiro-marker');
+  const soundBtn    = document.getElementById('sound-btn');
+
+  let videoStarted = false;
+
+  // ── Geluid aan zetten ────────────────────────────────────────
+  function enableSound() {
+    videoAsset.muted = false;
+    videoAsset.volume = 1.0;
+    videoAsset.play().catch(() => {});
+    soundBtn.style.display = 'none';
+    log('🔊 Geluid ingeschakeld', 'ok');
+  }
+  soundBtn.addEventListener('touchstart', (e) => { e.preventDefault(); enableSound(); }, { passive: false });
+  soundBtn.addEventListener('click', enableSound);
+
+  function log(msg, type) {
+    type = type || 'info';
+    const d = document.createElement('div');
+    d.className = type;
+    d.textContent = new Date().toLocaleTimeString('nl', {hour:'2-digit',minute:'2-digit',second:'2-digit'}) + ' ' + msg;
+    debugLog.appendChild(d);
+    debugLog.scrollTop = debugLog.scrollHeight;
+    console.log('[DEBUG]', msg);
+  }
+
+  // ── AR.js dialogs verwijderen ────────────────────────────
+  function killPermissionDialog() {
+    const selectors = ['.a-dialog','.a-dialog-allow-button','.a-dialog-deny-button','[class*="a-dialog"]','[id*="a-dialog"]'];
+    selectors.forEach(sel => {
+      document.querySelectorAll(sel).forEach(el => {
+        el.style.display = 'none'; el.style.visibility = 'hidden';
+        el.style.pointerEvents = 'none'; el.style.opacity = '0';
+        if (el.parentNode) el.parentNode.removeChild(el);
+      });
+    });
+  }
+  const observer = new MutationObserver(() => killPermissionDialog());
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  // ── Video asset events ───────────────────────────────────
+  videoAsset.addEventListener('loadstart',   () => log('📥 Video: loadstart', 'info'));
+  videoAsset.addEventListener('loadeddata',  () => log('✅ Video: loadeddata (klaar om af te spelen)', 'ok'));
+  videoAsset.addEventListener('canplay',     () => log('✅ Video: canplay', 'ok'));
+  videoAsset.addEventListener('canplaythrough', () => log('✅ Video: canplaythrough', 'ok'));
+  videoAsset.addEventListener('error',       () => {
+    const code = videoAsset.error ? videoAsset.error.code : '?';
+    const msg  = videoAsset.error ? videoAsset.error.message : 'onbekend';
+    log('❌ Video laad FOUT — code: ' + code + ' — ' + msg, 'err');
+    log('   Bestand: ' + (videoAsset.src || 'geen src'), 'err');
+    log('   NetworkState: ' + videoAsset.networkState + ' ReadyState: ' + videoAsset.readyState, 'err');
+  });
+  videoAsset.addEventListener('stalled',     () => log('⚠️ Video: stalled (netwerk stopt)', 'warn'));
+  videoAsset.addEventListener('waiting',     () => log('⏳ Video: waiting (buffert)', 'warn'));
+  videoAsset.addEventListener('playing',     () => log('▶️ Video: playing', 'ok'));
+  videoAsset.addEventListener('pause',       () => log('⏸ Video: paused', 'warn'));
+  videoAsset.addEventListener('ended',       () => log('⏹ Video: ended', 'info'));
+
+  // ── Scène geladen ────────────────────────────────────────
+  const scene = document.getElementById('ar-scene');
+  scene.addEventListener('loaded', () => {
+    log('✅ A-Frame scène geladen', 'ok');
+    killPermissionDialog();
+    log('📹 Video src: ' + videoAsset.src, 'info');
+    log('📹 Video readyState: ' + videoAsset.readyState, 'info');
+    log('📹 Video networkState: ' + videoAsset.networkState, 'info');
+  });
+  setTimeout(() => {
+    log('⏱ Fallback timeout (8s) — scène status: ' + (scene.hasLoaded ? 'geladen' : 'NIET geladen'), 'warn');
+  }, 8000);
+
+  // ── Marker events ────────────────────────────────────────
+  hiroMarker.addEventListener('markerFound', () => {
+    log('🎯 MARKER GEVONDEN', 'ok');
+    markerHint.classList.remove('visible');
+    if (!videoStarted) {
+      tapOverlay.classList.add('visible');
+      log('👆 Tik om te starten verschijnt', 'info');
+    } else {
+      arVideoEl.setAttribute('visible', 'true');
+      log('▶️ Video zichtbaar gezet (marker terug)', 'ok');
+    }
+  });
+
+  hiroMarker.addEventListener('markerLost', () => {
+    log('👁 Marker verloren', 'warn');
+    tapOverlay.classList.remove('visible');
+    arVideoEl.setAttribute('visible', 'false');
+    markerHint.classList.add('visible');
+  });
+
+  // ── Video starten (geen canplay-wacht, direct play) ────────
+  async function startVideo() {
+    log('👆 START GEKLIKT', 'ok');
+    tapOverlay.classList.remove('visible');
+    log('📹 readyState: ' + videoAsset.readyState + '  networkState: ' + videoAsset.networkState, 'info');
+
+    try {
+      // Stap 1: muted=true zodat browser autoplay toestaat
+      videoAsset.muted = true;
+      videoAsset.setAttribute('playsinline', '');
+      videoAsset.setAttribute('webkit-playsinline', '');
+      videoAsset.currentTime = 0;
+
+      // Stap 2: load() opnieuw aanroepen
+      log('🔄 load() aanroepen…', 'info');
+      videoAsset.load();
+
+      // Stap 3: direct play() — geen wachten op canplay
+      log('▶️ play() aanroepen (muted=true)…', 'info');
+      await videoAsset.play();
+      log('✅ PLAY GESTART (muted)', 'ok');
+
+      videoStarted = true;
+      arVideoEl.setAttribute('visible', 'true');
+      log('✅ AR videovlak zichtbaar gezet', 'ok');
+
+      // Stap 4: geluid-knop tonen
+      soundBtn.style.display = 'block';
+      log('🔊 Geluid-knop zichtbaar', 'info');
+
+    } catch (err) {
+      log('❌ PLAY MISLUKT: ' + err.name + ' — ' + err.message, 'err');
+      log('   readyState: ' + videoAsset.readyState + '  networkState: ' + videoAsset.networkState, 'err');
+      tapOverlay.classList.add('visible');
+    }
+  }
+
+  tapOverlay.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); startVideo(); }, { passive: false });
+  tapOverlay.addEventListener('click', (e) => { e.stopPropagation(); startVideo(); });
+
+</script>
+</body>
+</html>
