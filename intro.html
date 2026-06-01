@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Schaduwboek - Introductie</title>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #000; }
+        #ui-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: space-between;
+            align-items: center; pointer-events: none; z-index: 10; color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+        .header { padding: 20px; text-align: center; background: rgba(0,0,0,0.4); width: 100%; box-sizing: border-box; }
+        .footer { padding: 40px; text-align: center; width: 100%; box-sizing: border-box; }
+        .btn {
+            padding: 15px 30px; font-size: 1.2rem; background: rgba(255,255,255,0.2);
+            border: 2px solid white; color: white; border-radius: 30px;
+            cursor: pointer; pointer-events: auto; backdrop-filter: blur(5px);
+            transition: all 0.3s; margin: 10px;
+        }
+        .btn:hover { background: rgba(255,255,255,0.4); }
+        #sound-btn { display: none; position: fixed; top: 80px; right: 20px; padding: 10px 20px; font-size: 0.9rem; }
+        #status-msg { font-size: 1.1rem; margin-bottom: 20px; }
+        #tap-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.1); display: none; justify-content: center;
+            align-items: center; z-index: 20; pointer-events: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ui-overlay">
+        <div class="header">
+            <h1 style="margin:0; font-size: 1.4rem;">Introductie</h1>
+        </div>
+        
+        <div class="footer">
+            <div id="status-msg">Richt je camera op de Hiro-marker</div>
+            <div id="tap-overlay">
+                <button class="btn" id="start-btn">▶ Tik om te starten</button>
+            </div>
+            <button class="btn" id="sound-btn">🔊 Zet geluid aan</button>
+        </div>
+    </div>
+
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
+        <a-assets>
+            <video id="ar-video-asset" src="intro.mp4" preload="auto" loop="false" playsinline webkit-playsinline crossorigin="anonymous"></video>
+        </a-assets>
+
+        <!-- Hiro Marker -->
+        <a-marker preset="hiro" id="main-marker">
+            <!-- Het videovlak met de holografische shader -->
+            <a-entity 
+                id="ar-video-entity"
+                geometry="primitive: plane; width: 1.4; height: 2.49;"
+                material="shader: chroma-key; src: #ar-video-asset; color: 0 0 0; threshold: 0.1; visible: false;"
+                position="0 0.2 0"
+                rotation="-90 0 0">
+            </a-entity>
+        </a-marker>
+
+        <a-entity camera></a-entity>
+    </a-scene>
+
+    <script>
+        // Registreer de Chroma Key Shader voor A-Frame
+        AFRAME.registerShader('chroma-key', {
+            schema: {
+                src: { type: 'map', is: 'uniform' },
+                color: { type: 'color', is: 'uniform', default: '0 0 0' },
+                threshold: { type: 'number', is: 'uniform', default: 0.1 }
+            },
+            vertexShader: `
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                varying vec2 vUv;
+                uniform sampler2D src;
+                uniform vec3 color;
+                uniform float threshold;
+                void main() {
+                    vec4 texColor = texture2D(src, vUv);
+                    float dist = distance(texColor.rgb, color);
+                    if (dist < threshold) {
+                        discard;
+                    }
+                    gl_FragColor = texColor;
+                }
+            `
+        });
+
+        const videoAsset = document.getElementById('ar-video-asset');
+        const arVideoEl = document.getElementById('ar-video-entity');
+        const marker = document.getElementById('main-marker');
+        const statusMsg = document.getElementById('status-msg');
+        const tapOverlay = document.getElementById('tap-overlay');
+        const startBtn = document.getElementById('start-btn');
+        const soundBtn = document.getElementById('sound-btn');
+
+        let isMarkerFound = false;
+        let isStarted = false;
+        let markerLostTimer = null;
+
+        marker.addEventListener('markerFound', () => {
+            isMarkerFound = true;
+            if (markerLostTimer) clearTimeout(markerLostTimer);
+            
+            if (!isStarted) {
+                statusMsg.style.display = 'none';
+                tapOverlay.style.display = 'flex';
+            } else {
+                statusMsg.style.display = 'none';
+            }
+        });
+
+        marker.addEventListener('markerLost', () => {
+            isMarkerFound = false;
+            markerLostTimer = setTimeout(() => {
+                if (!isMarkerFound) {
+                    statusMsg.style.display = 'block';
+                    statusMsg.innerText = 'Richt je camera op de Hiro-marker';
+                    tapOverlay.style.display = 'none';
+                }
+            }, 1500);
+        });
+
+        startBtn.addEventListener('click', () => {
+            isStarted = true;
+            tapOverlay.style.display = 'none';
+            
+            // Start video muted (browser eis)
+            videoAsset.muted = true;
+            videoAsset.play().then(() => {
+                arVideoEl.setAttribute('material', 'visible', 'true');
+                soundBtn.style.display = 'block';
+            }).catch(err => {
+                console.error("Play error:", err);
+            });
+        });
+
+        soundBtn.addEventListener('click', () => {
+            videoAsset.muted = false;
+            soundBtn.style.display = 'none';
+        });
+
+        // Reset als de video eindigt
+        videoAsset.addEventListener('ended', () => {
+            isStarted = false;
+            arVideoEl.setAttribute('material', 'visible', 'false');
+            soundBtn.style.display = 'none';
+            if (isMarkerFound) {
+                tapOverlay.style.display = 'flex';
+            }
+        });
+    </script>
+</body>
+</html>
