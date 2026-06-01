@@ -239,19 +239,28 @@
     const chapterLabel = document.getElementById('chapter-label');
     const hint = document.getElementById('hint');
     const loadingScreen = document.getElementById('loading-screen');
-
-    // Verberg laadscherm zodra AR klaar is
     const sceneEl = document.querySelector('a-scene');
 
     function hideLoading() {
       loadingScreen.classList.add('hidden');
     }
 
-    sceneEl.addEventListener('arReady', hideLoading);
-    sceneEl.addEventListener('rendered', hideLoading);
+    function startAR() {
+      sceneEl.addEventListener('arReady', hideLoading);
+      sceneEl.addEventListener('rendered', hideLoading);
+      setTimeout(hideLoading, 6000);
+    }
 
-    // Fallback: altijd verbergen na 4 seconden
-    setTimeout(hideLoading, 4000);
+    // Vraag eerst expliciet camera toestemming, dan pas AR starten
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+      .then(stream => {
+        // Stop de teststream direct weer, MindAR start zijn eigen stream
+        stream.getTracks().forEach(t => t.stop());
+        startAR();
+      })
+      .catch(err => {
+        loadingScreen.querySelector('.loading-hint').textContent = 'Cameratoegang vereist. Controleer je instellingen.';
+      });
 
     // Per target: video starten bij detect, stoppen bij verlies
     for (let i = 0; i < 12; i++) {
