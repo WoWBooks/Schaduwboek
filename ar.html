@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wat je schaduw je wil vertellen – AR</title>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; font-family: Georgia, serif; overflow: hidden; }
+
+    #loading-screen {
+      position: fixed;
+      inset: 0;
+      background: #0a0a0a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.8s ease;
+    }
+    #loading-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .loading-title {
+      color: #c8a96e;
+      font-size: 1.1rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      text-align: center;
+      padding: 0 32px;
+    }
+    .loading-subtitle {
+      color: #c8a96e;
+      font-size: 0.7rem;
+      letter-spacing: 3px;
+      opacity: 0.6;
+      margin-bottom: 48px;
+    }
+    .loading-bar-wrap {
+      width: 200px;
+      height: 1px;
+      background: #2a2a2a;
+      margin-bottom: 20px;
+    }
+    .loading-bar {
+      height: 1px;
+      background: #c8a96e;
+      width: 0%;
+      animation: load 2.5s ease forwards;
+    }
+    @keyframes load {
+      0% { width: 0%; }
+      100% { width: 100%; }
+    }
+    .loading-hint {
+      color: #c8a96e;
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      opacity: 0.4;
+    }
+
+    #hint {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #c8a96e;
+      font-size: 0.7rem;
+      letter-spacing: 3px;
+      opacity: 0.7;
+      text-align: center;
+      pointer-events: none;
+      z-index: 100;
+      text-transform: uppercase;
+    }
+
+    #chapter-label {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #c8a96e;
+      font-size: 0.65rem;
+      letter-spacing: 4px;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      z-index: 100;
+      text-transform: uppercase;
+      pointer-events: none;
+    }
+    #chapter-label.visible {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Laadscherm -->
+  <div id="loading-screen">
+    <div class="loading-title">Wat je schaduw je wil vertellen</div>
+    <div class="loading-subtitle">Words of Wholeness</div>
+    <div class="loading-bar-wrap">
+      <div class="loading-bar"></div>
+    </div>
+    <div class="loading-hint">Camera wordt geladen&hellip;</div>
+  </div>
+
+  <!-- Hoofdstuklabel -->
+  <div id="chapter-label"></div>
+
+  <!-- Scan hint -->
+  <div id="hint">Richt de camera op een pagina in het boek</div>
+
+  <!-- AR Scene -->
+  <a-scene
+    mindar-image="imageTargetSrc: assets/targets.mind; autoStart: true; uiLoading: no; uiError: no; uiScanning: no;"
+    color-space="sRGB"
+    renderer="colorManagement: true; physicallyCorrectLights: true"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+  >
+    <a-assets>
+      <video id="vid0"  src="intro.mp4"      preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="vid1"  src="V1.mp4"         preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="vid2"  src="V2.mp4"         preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="vid3"  src="V3.mp4"         preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="vid4"  src="V4.mp4"         preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="vid5"  src="V5.mp4"         preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="vid6"  src="V6.mp4"         preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="vid7"  src="V7.mp4"         preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="vid8"  src="V8.mp4"         preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="vid9"  src="V9.mp4"         preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="vid10" src="V10.mp4"        preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="vid11" src="Slotwoord.mp4"  preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+    </a-assets>
+
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <!-- Index 0: Intro -->
+    <a-entity mindar-image-target="targetIndex: 0">
+      <a-video src="#vid0" position="0 0 0" width="1" height="0.552" rotation="0 0 0"></a-video>
+    </a-entity>
+
+    <!-- Index 1: Hoofdstuk 1 -->
+    <a-entity mindar-image-target="targetIndex: 1">
+      <a-video src="#vid1" position="0 0 0" width="1" height="0.552" rotation="0 0 0"></a-video>
+    </a-entity>
+
+    <!-- Index 2: Hoofdstuk 2 -->
+    <a-entity mindar-image-target="targetIndex: 2">
+      <a-video src="#vid2" position="0 0 0" width="1" height="0.552" rotation="0 0 0"></a-video>
+    </a-entity>
+
+    <!-- Index 3: Hoofdstuk 3 -->
+    <a-entity mindar-image-target="targetIndex: 3">
+      <a-video src="#vid3" position="0 0 0" width="1" height="0.552" rotation="0 0 0"></a-video>
+    </a-entity>
+
+    <!-- Index 4: Hoofdstuk 4 -->
+    <a-entity mindar-image-target="targetIndex: 4">
+      <a-video src="#vid4" position="0 0 0" width="1" height="0.552" rotation="0 0 0"></a-video>
+    </a-entity>
+
+    <!-- Index 5: Hoofdstuk 5 -->
+    <a-entity mindar-image-target="targetIndex: 5">
+      <a-video src="#vid5" position="0 0 0" width="1" height="0.552" rotation="0 0 0"></a-video>
+    </a-entity>
+
+    <!-- Index 6: Hoofdstuk 6 -->
+    <a-entity mindar-image-target="targetIndex: 6">
+      <a-video src="#vid6" position="0 0 0" width="1" height="0.552" rotation="0 0 0"></a-video>
+    </a-entity>
+
+    <!-- Index 7: Hoofdstuk 7 -->
+    <a-entity mindar-image-target="targetIndex: 7">
+      <a-video src="#vid7" position="0 0 0" width="1" height="0.552" rotation="0 0 0"></a-video>
+    </a-entity>
+
+    <!-- Index 8: Hoofdstuk 8 -->
+    <a-entity mindar-image-target="targetIndex: 8">
+      <a-video src="#vid8" position="0 0 0" width="1" height="0.552" rotation="0 0 0"></a-video>
+    </a-entity>
+
+    <!-- Index 9: Hoofdstuk 9 -->
+    <a-entity mindar-image-target="targetIndex: 9">
+      <a-video src="#vid9" position="0 0 0" width="1" height="0.552" rotation="0 0 0"></a-video>
+    </a-entity>
+
+    <!-- Index 10: Hoofdstuk 10 -->
+    <a-entity mindar-image-target="targetIndex: 10">
+      <a-video src="#vid10" position="0 0 0" width="1" height="0.552" rotation="0 0 0"></a-video>
+    </a-entity>
+
+    <!-- Index 11: Slotwoord -->
+    <a-entity mindar-image-target="targetIndex: 11">
+      <a-video src="#vid11" position="0 0 0" width="1" height="0.552" rotation="0 0 0"></a-video>
+    </a-entity>
+
+  </a-scene>
+
+  <script>
+    const labels = [
+      'Intro',
+      'Hoofdstuk I', 'Hoofdstuk II', 'Hoofdstuk III', 'Hoofdstuk IV',
+      'Hoofdstuk V', 'Hoofdstuk VI', 'Hoofdstuk VII', 'Hoofdstuk VIII',
+      'Hoofdstuk IX', 'Hoofdstuk X', 'Slotwoord'
+    ];
+
+    const chapterLabel = document.getElementById('chapter-label');
+    const hint = document.getElementById('hint');
+    const loadingScreen = document.getElementById('loading-screen');
+
+    // Verberg laadscherm zodra AR klaar is
+    const sceneEl = document.querySelector('a-scene');
+
+    function hideLoading() {
+      loadingScreen.classList.add('hidden');
+    }
+
+    sceneEl.addEventListener('arReady', hideLoading);
+    sceneEl.addEventListener('rendered', hideLoading);
+
+    // Fallback: altijd verbergen na 4 seconden
+    setTimeout(hideLoading, 4000);
+
+    // Per target: video starten bij detect, stoppen bij verlies
+    for (let i = 0; i < 12; i++) {
+      const target = document.querySelector(`[mindar-image-target="targetIndex: ${i}"]`);
+      const video = document.getElementById(`vid${i}`);
+
+      target.addEventListener('targetFound', () => {
+        video.play();
+        hint.style.opacity = '0';
+        chapterLabel.textContent = labels[i];
+        chapterLabel.classList.add('visible');
+      });
+
+      target.addEventListener('targetLost', () => {
+        video.pause();
+        video.currentTime = 0;
+        hint.style.opacity = '0.7';
+        chapterLabel.classList.remove('visible');
+      });
+    }
+  </script>
+
+</body>
+</html>
