@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>Words of Wholeness AR</title>
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#000; color:#fff; overflow:hidden; }
+    canvas { pointer-events:none !important; }
+    a-scene { pointer-events:none !important; }
+    #top-title {
+      position:fixed; top:18px; left:50%; transform:translateX(-50%);
+      z-index:80000; font-size:.85rem; letter-spacing:.08em;
+      color:rgba(255,255,255,.82); background:rgba(0,0,0,.45);
+      border:1px solid rgba(255,255,255,.12); border-radius:18px;
+      padding:8px 16px; backdrop-filter:blur(6px); white-space:nowrap; pointer-events:none;
+    }
+    #marker-hint {
+      position:fixed; bottom:34px; left:50%; transform:translateX(-50%);
+      background:rgba(0,0,0,.62); backdrop-filter:blur(6px);
+      border:1px solid rgba(255,255,255,.15); border-radius:24px;
+      padding:12px 24px; font-size:.9rem; color:rgba(255,255,255,.86);
+      white-space:nowrap; display:block; z-index:70000; pointer-events:none;
+    }
+    #tap-overlay {
+      position:fixed; inset:0; z-index:99998; pointer-events:auto;
+      display:none; flex-direction:column; align-items:center; justify-content:flex-end;
+      padding-bottom:70px; background:transparent; touch-action:manipulation; cursor:pointer;
+      -webkit-tap-highlight-color:transparent;
+    }
+    #tap-overlay.visible { display:flex; }
+    #tap-label {
+      background:rgba(255,255,255,.97); color:#000; border-radius:32px;
+      padding:16px 38px; font-size:1.05rem; font-weight:700;
+      box-shadow:0 4px 24px rgba(0,0,0,.5); pointer-events:none;
+      user-select:none; -webkit-user-select:none;
+    }
+    #sound-btn {
+      display:none; position:fixed; bottom:34px; left:50%; transform:translateX(-50%);
+      z-index:99997; background:rgba(255,255,255,.96); color:#000;
+      border:none; border-radius:30px; padding:14px 30px; font-size:1rem; font-weight:700;
+      pointer-events:auto; touch-action:manipulation; cursor:pointer;
+      box-shadow:0 4px 20px rgba(0,0,0,.4); white-space:nowrap;
+    }
+    #end-message, #error-message {
+      display:none; position:fixed; left:50%; bottom:34px; transform:translateX(-50%);
+      z-index:99999; max-width:86vw; text-align:center; background:rgba(0,0,0,.78);
+      color:#fff; border:1px solid rgba(255,255,255,.18); border-radius:24px;
+      padding:14px 22px; font-size:.92rem; line-height:1.45; backdrop-filter:blur(8px);
+    }
+    .a-dialog, .a-dialog-allow-button, .a-dialog-deny-button,
+    [class*="a-dialog"], [id*="a-dialog"] {
+      display:none !important; visibility:hidden !important; pointer-events:none !important; opacity:0 !important;
+    }
+  </style>
+</head>
+<body>
+  <div id="top-title">WORDS OF WHOLENESS</div>
+  <div id="marker-hint">Richt je camera op de Hiro-marker</div>
+  <div id="tap-overlay"><div id="tap-label">▶ Start video</div></div>
+  <button id="sound-btn">🔊 Zet geluid aan</button>
+  <div id="end-message">Video afgerond.<br>Je kunt terug naar het boek.</div>
+  <div id="error-message"></div>
+
+  <a-scene id="ar-scene" embedded
+    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+    renderer="logarithmicDepthBuffer: true; colorManagement: true;"
+    vr-mode-ui="enabled: false" loading-screen="enabled: false">
+    <a-assets>
+      <video id="ar-video-asset" preload="auto" playsinline webkit-playsinline crossorigin="anonymous" loop="false"></video>
+    </a-assets>
+    <a-marker id="hiro-marker" preset="hiro" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
+      <a-video id="ar-video" src="#ar-video-asset" width="1.4" height="2.49" position="0 0.2 0" rotation="-90 0 0" visible="false"></a-video>
+    </a-marker>
+    <a-entity camera></a-entity>
+  </a-scene>
+
+  <script>
+    const VIDEO_MAP = {
+      intro: { file: 'intro.mp4', title: 'Introductie' },
+      1: { file: 'V1.mp4', title: 'Hoofdstuk 1' },
+      2: { file: 'V2.mp4', title: 'Hoofdstuk 2' },
+      3: { file: 'V3.mp4', title: 'Hoofdstuk 3' },
+      4: { file: 'V4.mp4', title: 'Hoofdstuk 4' },
+      5: { file: 'V5.mp4', title: 'Hoofdstuk 5' },
+      6: { file: 'V6.mp4', title: 'Hoofdstuk 6' },
+      7: { file: 'V7.mp4', title: 'Hoofdstuk 7' },
+      8: { file: 'V8.mp4', title: 'Hoofdstuk 8' },
+      9: { file: 'V9.mp4', title: 'Hoofdstuk 9' },
+      10: { file: 'V10.mp4', title: 'Hoofdstuk 10' },
+      slot: { file: 'Slotwoord.mp4', title: 'Slotwoord' }
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const selected = params.get('video') || 'intro';
+    const selectedVideo = VIDEO_MAP[selected] || VIDEO_MAP.intro;
+
+    const topTitle = document.getElementById('top-title');
+    const markerHint = document.getElementById('marker-hint');
+    const tapOverlay = document.getElementById('tap-overlay');
+    const videoAsset = document.getElementById('ar-video-asset');
+    const arVideoEl = document.getElementById('ar-video');
+    const hiroMarker = document.getElementById('hiro-marker');
+    const soundBtn = document.getElementById('sound-btn');
+    const endMessage = document.getElementById('end-message');
+    const errorMessage = document.getElementById('error-message');
+
+    let videoStarted = false;
+    let videoEnded = false;
+    let markerLostTimer = null;
+
+    topTitle.textContent = selectedVideo.title.toUpperCase();
+    videoAsset.src = selectedVideo.file;
+    videoAsset.setAttribute('playsinline', '');
+    videoAsset.setAttribute('webkit-playsinline', '');
+    videoAsset.load();
+
+    function showError(message) {
+      errorMessage.innerHTML = message;
+      errorMessage.style.display = 'block';
+      tapOverlay.classList.remove('visible');
+      markerHint.style.display = 'none';
+    }
+
+    videoAsset.addEventListener('error', function() {
+      showError('Video kan niet worden geladen.<br>Controleer bestandsnaam: ' + selectedVideo.file);
+    });
+
+    function killPermissionDialog() {
+      const selectors = ['.a-dialog','.a-dialog-allow-button','.a-dialog-deny-button','[class*="a-dialog"]','[id*="a-dialog"]'];
+      selectors.forEach(function(sel) {
+        document.querySelectorAll(sel).forEach(function(el) {
+          el.style.display = 'none';
+          el.style.visibility = 'hidden';
+          el.style.pointerEvents = 'none';
+          el.style.opacity = '0';
+          if (el.parentNode) el.parentNode.removeChild(el);
+        });
+      });
+    }
+    const observer = new MutationObserver(function(){ killPermissionDialog(); });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    hiroMarker.addEventListener('markerFound', function() {
+      if (videoEnded) return;
+      if (markerLostTimer !== null) {
+        clearTimeout(markerLostTimer);
+        markerLostTimer = null;
+      }
+      markerHint.style.display = 'none';
+      if (!videoStarted) {
+        tapOverlay.classList.add('visible');
+      } else {
+        arVideoEl.setAttribute('visible', 'true');
+        videoAsset.play().catch(function(){ tapOverlay.classList.add('visible'); });
+      }
+    });
+
+    hiroMarker.addEventListener('markerLost', function() {
+      markerLostTimer = setTimeout(function() {
+        markerLostTimer = null;
+        tapOverlay.classList.remove('visible');
+        arVideoEl.setAttribute('visible', 'false');
+        if (!videoAsset.paused) videoAsset.pause();
+        if (!videoStarted && !videoEnded) markerHint.style.display = 'block';
+      }, 1200);
+    });
+
+    async function startVideo() {
+      endMessage.style.display = 'none';
+      errorMessage.style.display = 'none';
+      tapOverlay.classList.remove('visible');
+      try {
+        videoAsset.muted = true;
+        videoAsset.volume = 0;
+        videoAsset.currentTime = 0;
+        await videoAsset.play();
+        videoStarted = true;
+        arVideoEl.setAttribute('visible', 'true');
+        soundBtn.style.display = 'block';
+      } catch (err) {
+        showError('Video start niet.<br>Probeer opnieuw of controleer het videobestand.');
+      }
+    }
+
+    tapOverlay.addEventListener('touchstart', function(e) {
+      e.preventDefault(); e.stopPropagation(); startVideo();
+    }, { passive: false });
+    tapOverlay.addEventListener('click', function(e) {
+      e.stopPropagation(); startVideo();
+    });
+
+    function enableSound() {
+      videoAsset.muted = false;
+      videoAsset.volume = 1.0;
+      videoAsset.play().catch(function(){});
+      soundBtn.style.display = 'none';
+    }
+    soundBtn.addEventListener('touchstart', function(e) {
+      e.preventDefault(); enableSound();
+    }, { passive: false });
+    soundBtn.addEventListener('click', enableSound);
+
+    videoAsset.addEventListener('ended', function() {
+      videoEnded = true;
+      videoStarted = false;
+      soundBtn.style.display = 'none';
+      tapOverlay.classList.remove('visible');
+      markerHint.style.display = 'none';
+      arVideoEl.setAttribute('visible', 'false');
+      endMessage.style.display = 'block';
+    });
+  </script>
+</body>
+</html>
