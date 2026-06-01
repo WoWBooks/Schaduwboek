@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>Hoofdstuk 6</title>
+
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#000; color:#fff; overflow:hidden; }
+    canvas, a-scene { pointer-events:none !important; }
+
+    #top-title { position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:80000; padding:8px 16px; border-radius:18px; background:rgba(0,0,0,.45); color:rgba(255,255,255,.86); font-size:.82rem; letter-spacing:.03em; pointer-events:none; }
+    #marker-hint, #status-message { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); z-index:70000; background:rgba(0,0,0,.68); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,.15); border-radius:24px; padding:12px 24px; font-size:.88rem; color:rgba(255,255,255,.88); white-space:nowrap; display:none; pointer-events:none; text-align:center; max-width:92vw; }
+    #marker-hint.visible, #status-message.visible { display:block; }
+    #status-message.error { background:rgba(120,0,0,.82); white-space:normal; }
+
+    #tap-overlay { position:fixed; inset:0; z-index:99998; pointer-events:auto; display:none; flex-direction:column; align-items:center; justify-content:flex-end; padding-bottom:60px; background:transparent; touch-action:manipulation; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+    #tap-overlay.visible { display:flex; }
+    #tap-label { background:rgba(255,255,255,.97); color:#000; border-radius:30px; padding:16px 36px; font-size:1.05rem; font-weight:700; box-shadow:0 4px 24px rgba(0,0,0,.5); pointer-events:none; user-select:none; -webkit-user-select:none; }
+
+    #sound-btn { display:none; position:fixed; bottom:92px; left:50%; transform:translateX(-50%); z-index:99997; background:rgba(255,255,255,.95); color:#000; border:none; border-radius:30px; padding:14px 30px; font-size:1rem; font-weight:700; pointer-events:auto; touch-action:manipulation; cursor:pointer; box-shadow:0 4px 20px rgba(0,0,0,.4); white-space:nowrap; }
+
+    .a-dialog, .a-dialog-allow-button, .a-dialog-deny-button, [class*="a-dialog"], [id*="a-dialog"] { display:none !important; visibility:hidden !important; pointer-events:none !important; opacity:0 !important; }
+  </style>
+</head>
+<body>
+  <div id="top-title">Hoofdstuk 6</div>
+  <div id="marker-hint" class="visible">Richt je camera op de Hiro-marker</div>
+  <div id="status-message"></div>
+
+  <div id="tap-overlay">
+    <div id="tap-label">▶ Tik om te starten</div>
+  </div>
+
+  <button id="sound-btn">🔊 Zet geluid aan</button>
+
+  <a-scene
+    id="ar-scene"
+    embedded
+    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+    renderer="logarithmicDepthBuffer: true; colorManagement: true;"
+    vr-mode-ui="enabled: false"
+    loading-screen="enabled: false"
+  >
+    <a-assets>
+      <video id="ar-video-asset" src="V6.mp4" preload="auto" playsinline webkit-playsinline crossorigin="anonymous" loop="false"></video>
+    </a-assets>
+
+    <a-marker id="hiro-marker" preset="hiro" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
+      <a-video id="ar-video" src="#ar-video-asset" width="1.4" height="2.49" position="0 0.2 0" rotation="-90 0 0" visible="false"></a-video>
+    </a-marker>
+
+    <a-entity camera></a-entity>
+  </a-scene>
+
+  <script>
+    const tapOverlay = document.getElementById('tap-overlay');
+    const markerHint = document.getElementById('marker-hint');
+    const statusMessage = document.getElementById('status-message');
+    const videoAsset = document.getElementById('ar-video-asset');
+    const arVideoEl = document.getElementById('ar-video');
+    const hiroMarker = document.getElementById('hiro-marker');
+    const soundBtn = document.getElementById('sound-btn');
+
+    let videoStarted = false;
+    let markerLostTimer = null;
+
+    function showStatus(text, isError=false) {
+      statusMessage.textContent = text;
+      statusMessage.className = 'visible' + (isError ? ' error' : '');
+      if (!isError) setTimeout(() => statusMessage.classList.remove('visible'), 3500);
+    }
+
+    function killPermissionDialog() {
+      const selectors = ['.a-dialog','.a-dialog-allow-button','.a-dialog-deny-button','[class*="a-dialog"]','[id*="a-dialog"]'];
+      selectors.forEach(sel => {
+        document.querySelectorAll(sel).forEach(el => {
+          el.style.display = 'none'; el.style.visibility = 'hidden'; el.style.pointerEvents = 'none'; el.style.opacity = '0';
+          if (el.parentNode) el.parentNode.removeChild(el);
+        });
+      });
+    }
+    const observer = new MutationObserver(() => killPermissionDialog());
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    videoAsset.addEventListener('error', () => showStatus('Video kon niet laden. Controleer bestandsnaam: V6.mp4', true));
+
+    hiroMarker.addEventListener('markerFound', () => {
+      if (markerLostTimer !== null) { clearTimeout(markerLostTimer); markerLostTimer = null; }
+      markerHint.classList.remove('visible');
+      statusMessage.classList.remove('visible');
+      if (!videoStarted) {
+        tapOverlay.classList.add('visible');
+      } else {
+        arVideoEl.setAttribute('visible', 'true');
+        if (videoAsset.paused && !videoAsset.ended) videoAsset.play().catch(() => {});
+      }
+    });
+
+    hiroMarker.addEventListener('markerLost', () => {
+      markerLostTimer = setTimeout(() => {
+        markerLostTimer = null;
+        tapOverlay.classList.remove('visible');
+        arVideoEl.setAttribute('visible', 'false');
+        if (!videoAsset.paused) videoAsset.pause();
+        if (!videoStarted) markerHint.classList.add('visible');
+      }, 1200);
+    });
+
+    async function startVideo() {
+      tapOverlay.classList.remove('visible');
+      try {
+        videoAsset.muted = true;
+        videoAsset.setAttribute('muted', '');
+        videoAsset.setAttribute('playsinline', '');
+        videoAsset.setAttribute('webkit-playsinline', '');
+        videoAsset.currentTime = 0;
+        await videoAsset.play();
+        videoStarted = true;
+        arVideoEl.setAttribute('visible', 'true');
+        soundBtn.style.display = 'block';
+      } catch (err) {
+        showStatus('Video kon niet starten. Tik opnieuw of controleer het videobestand.', true);
+        tapOverlay.classList.add('visible');
+      }
+    }
+
+    tapOverlay.addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); startVideo(); }, { passive:false });
+    tapOverlay.addEventListener('click', e => { e.stopPropagation(); startVideo(); });
+
+    function enableSound() {
+      videoAsset.muted = false;
+      videoAsset.removeAttribute('muted');
+      videoAsset.volume = 1.0;
+      videoAsset.play().catch(() => {});
+      soundBtn.style.display = 'none';
+    }
+    soundBtn.addEventListener('touchstart', e => { e.preventDefault(); enableSound(); }, { passive:false });
+    soundBtn.addEventListener('click', enableSound);
+
+    videoAsset.addEventListener('ended', () => {
+      videoStarted = false;
+      soundBtn.style.display = 'none';
+      arVideoEl.setAttribute('visible', 'false');
+      showStatus('Video afgerond. Je kunt terug naar het boek.');
+      // Bewust géén automatische volgende video, géén redirect en géén playlist.
+    });
+  </script>
+</body>
+</html>
