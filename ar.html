@@ -37,6 +37,9 @@
   <div id="hint">Richt de camera op een pagina in het boek</div>
   <div id="video-overlay">
     <video id="fullscreen-video" playsinline webkit-playsinline></video>
+    <div id="tap-btn" style="display:none; position:fixed; inset:0; z-index:650; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
+      <button onclick="document.getElementById('fullscreen-video').play(); this.parentElement.style.display='none';" style="background:rgba(0,0,0,0.9); border:1px solid #c8a96e; color:#c8a96e; font-family:Georgia,serif; font-size:1rem; letter-spacing:4px; text-transform:uppercase; padding:24px 56px; border-radius:2px; cursor:pointer;">▶&nbsp;&nbsp;Tik om te starten</button>
+    </div>
     <div id="close-btn">✕</div>
     <div id="video-chapter"></div>
   </div>
@@ -90,7 +93,14 @@
       videoChapter.textContent = labels[index];
       chapterLabel.textContent = labels[index];
       chapterLabel.classList.add('visible');
-      fsVideo.play().then(() => log('speelt')).catch(e => log('play fout: ' + e.message));
+      const tapBtn = document.getElementById('tap-btn');
+      tapBtn.style.display = 'none';
+      fsVideo.play()
+        .then(() => { log('speelt'); })
+        .catch(e => {
+          log('play fout: ' + e.message);
+          tapBtn.style.display = 'flex';
+        });
     }
 
     function stopFullscreen() {
