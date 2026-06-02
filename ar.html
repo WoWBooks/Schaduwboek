@@ -69,26 +69,6 @@
       padding: 0 20px;
     }
 
-    #tap-to-play {
-      position: fixed;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 700;
-    }
-    #tap-to-play button {
-      background: rgba(0,0,0,0.7);
-      border: 1px solid #c8a96e;
-      color: #c8a96e;
-      font-family: Georgia, serif;
-      font-size: 0.9rem;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      padding: 18px 48px;
-      border-radius: 2px;
-      cursor: pointer;
-    }
     #video-overlay {
       display: none;
       position: fixed;
@@ -99,14 +79,14 @@
       align-items: center;
       justify-content: center;
     }
-    #video-overlay.active {
-      display: flex;
-    }
+    #video-overlay.active { display: flex; }
+
     #fullscreen-video {
       width: 100vw;
       height: 100vh;
       object-fit: cover;
     }
+
     #close-btn {
       position: fixed;
       top: 24px;
@@ -124,6 +104,7 @@
       cursor: pointer;
       z-index: 600;
     }
+
     #video-chapter {
       position: fixed;
       bottom: 32px;
@@ -137,7 +118,27 @@
       opacity: 0.7;
     }
 
-
+    #tap-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 700;
+      align-items: center;
+      justify-content: center;
+    }
+    #tap-overlay.active { display: flex; }
+    #tap-overlay button {
+      background: rgba(0,0,0,0.75);
+      border: 1px solid #c8a96e;
+      color: #c8a96e;
+      font-family: Georgia, serif;
+      font-size: 0.85rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      padding: 18px 48px;
+      border-radius: 2px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -150,15 +151,16 @@
 
   <div id="hint">Richt de camera op een pagina in het boek</div>
 
-  <!-- Fullscreen video overlay -->
   <div id="video-overlay">
     <video id="fullscreen-video" playsinline webkit-playsinline></video>
-    <div id="tap-to-play"><button>▶ Tik om te starten</button></div>
     <div id="close-btn">✕</div>
     <div id="video-chapter"></div>
   </div>
 
-  <!-- AR Scene (alleen voor marker detectie) -->
+  <div id="tap-overlay">
+    <button id="tap-btn">▶&nbsp; Tik om te starten</button>
+  </div>
+
   <a-scene
     mindar-image="imageTargetSrc: assets/targets.mind; autoStart: true; uiLoading: no; uiError: no; uiScanning: no;"
     color-space="sRGB"
@@ -196,19 +198,14 @@
       'V6.mp4', 'V7.mp4', 'V8.mp4', 'V9.mp4', 'V10.mp4', 'Slotwoord.mp4'
     ];
 
-    const hint        = document.getElementById('hint');
-    const loading     = document.getElementById('loading-screen');
-    const loadHint    = document.getElementById('loading-hint');
-    const overlay     = document.getElementById('video-overlay');
-    const fsVideo     = document.getElementById('fullscreen-video');
-    const closeBtn    = document.getElementById('close-btn');
+    const loading      = document.getElementById('loading-screen');
+    const loadHint     = document.getElementById('loading-hint');
+    const overlay      = document.getElementById('video-overlay');
+    const fsVideo      = document.getElementById('fullscreen-video');
+    const closeBtn     = document.getElementById('close-btn');
     const videoChapter = document.getElementById('video-chapter');
-    const tapToPlay   = document.getElementById('tap-to-play');
-
-    tapToPlay.addEventListener('click', () => {
-      fsVideo.play();
-      tapToPlay.style.display = 'none';
-    });
+    const tapOverlay   = document.getElementById('tap-overlay');
+    const tapBtn       = document.getElementById('tap-btn');
 
     function hideLoading() {
       loading.classList.add('hidden');
@@ -218,42 +215,40 @@
       fsVideo.src = videoSrc[index];
       overlay.classList.add('active');
       videoChapter.textContent = labels[index];
-      tapToPlay.style.display = 'none';
-      const p = fsVideo.play();
-      if (p !== undefined) {
-        p.catch(() => { tapToPlay.style.display = 'flex'; });
-      }
+      tapOverlay.classList.add('active');
     }
+
+    tapBtn.addEventListener('click', () => {
+      fsVideo.play();
+      tapOverlay.classList.remove('active');
+    });
 
     function stopFullscreen() {
       fsVideo.pause();
       fsVideo.src = '';
       overlay.classList.remove('active');
+      tapOverlay.classList.remove('active');
     }
 
     closeBtn.addEventListener('click', stopFullscreen);
 
-    // Camera toestemming
     navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
       .then(stream => {
         stream.getTracks().forEach(t => t.stop());
-          loadHint.textContent = 'AR wordt geladen\u2026';
+        loadHint.textContent = 'AR wordt geladen\u2026';
       })
-      .catch(err => {
-          loadHint.textContent = 'Cameratoegang geweigerd';
+      .catch(() => {
+        loadHint.textContent = 'Cameratoegang geweigerd';
       });
 
     const sceneEl = document.querySelector('a-scene');
-    sceneEl.addEventListener('arReady', () => { hideLoading(); });
-    sceneEl.addEventListener('loaded', () => {});
-    setTimeout(() => { if (!loading.classList.contains('hidden')) { hideLoading(); }}, 8000);
+    sceneEl.addEventListener('arReady', hideLoading);
+    setTimeout(() => { if (!loading.classList.contains('hidden')) hideLoading(); }, 8000);
 
-    // Marker detectie: alleen triggeren als overlay niet al open is
     for (let i = 0; i < 12; i++) {
       const target = document.querySelector(`[mindar-image-target="targetIndex: ${i}"]`);
-
       target.addEventListener('targetFound', () => {
-          if (!overlay.classList.contains('active')) {
+        if (!overlay.classList.contains('active')) {
           playFullscreen(i);
         }
       });
