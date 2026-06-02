@@ -31,22 +31,6 @@
       pointer-events: none;
     }
 
-    #chapter-label {
-      position: fixed;
-      top: 24px;
-      left: 0; right: 0;
-      text-align: center;
-      color: #c8a96e;
-      font-size: 0.7rem;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      z-index: 100;
-      opacity: 0;
-      transition: opacity 0.4s;
-      pointer-events: none;
-    }
-    #chapter-label.visible { opacity: 0.9; }
-
     #loading-screen {
       position: fixed;
       inset: 0;
@@ -85,6 +69,55 @@
       padding: 0 20px;
     }
 
+    /* Fullscreen video overlay */
+    #video-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 500;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    #video-overlay.active {
+      display: flex;
+    }
+    #fullscreen-video {
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+    }
+    #close-btn {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      width: 44px;
+      height: 44px;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid #c8a96e88;
+      border-radius: 50%;
+      color: #c8a96e;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 600;
+    }
+    #video-chapter {
+      position: fixed;
+      bottom: 32px;
+      left: 0; right: 0;
+      text-align: center;
+      color: #c8a96e;
+      font-size: 0.65rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      z-index: 600;
+      opacity: 0.7;
+    }
+
     #debug {
       position: fixed;
       top: 60px;
@@ -95,7 +128,7 @@
       font-size: 11px;
       padding: 8px;
       z-index: 9998;
-      max-height: 160px;
+      max-height: 120px;
       overflow-y: auto;
       border: 1px solid #c8a96e44;
     }
@@ -109,33 +142,17 @@
     <div id="loading-hint">Camera wordt gestart&hellip;</div>
   </div>
 
-  <div id="tap-btn" style="
-    display: none;
-    position: fixed;
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 200;
-  ">
-    <button onclick="if(currentVideo){currentVideo.muted=false;currentVideo.volume=1;} document.getElementById('tap-btn').style.display='none';" style="
-      background: #c8a96e;
-      color: #0a0a0a;
-      border: none;
-      padding: 14px 32px;
-      font-family: Georgia, serif;
-      font-size: 0.8rem;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      border-radius: 2px;
-      cursor: pointer;
-      white-space: nowrap;
-    ">&#9654; Tik voor geluid</button>
-  </div>
-
   <div id="debug"></div>
-  <div id="chapter-label"></div>
   <div id="hint">Richt de camera op een pagina in het boek</div>
 
+  <!-- Fullscreen video overlay -->
+  <div id="video-overlay">
+    <video id="fullscreen-video" playsinline webkit-playsinline></video>
+    <div id="close-btn">✕</div>
+    <div id="video-chapter"></div>
+  </div>
+
+  <!-- AR Scene (alleen voor marker detectie) -->
   <a-scene
     mindar-image="imageTargetSrc: assets/targets.mind; autoStart: true; uiLoading: no; uiError: no; uiScanning: no;"
     color-space="sRGB"
@@ -143,60 +160,21 @@
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: false">
 
-    <a-assets>
-      <video id="vid0"  src="intro.mp4"     preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
-      <video id="vid1"  src="V1.mp4"        preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
-      <video id="vid2"  src="V2.mp4"        preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
-      <video id="vid3"  src="V3.mp4"        preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
-      <video id="vid4"  src="V4.mp4"        preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
-      <video id="vid5"  src="V5.mp4"        preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
-      <video id="vid6"  src="V6.mp4"        preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
-      <video id="vid7"  src="V7.mp4"        preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
-      <video id="vid8"  src="V8.mp4"        preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
-      <video id="vid9"  src="V9.mp4"        preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
-      <video id="vid10" src="V10.mp4"       preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
-      <video id="vid11" src="Slotwoord.mp4" preload="none" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
-    </a-assets>
-
+    <a-assets></a-assets>
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-    <a-entity mindar-image-target="targetIndex: 0">
-      <a-video src="#vid0" position="0 0 0" width="1" height="1.777"></a-video>
-    </a-entity>
-    <a-entity mindar-image-target="targetIndex: 1">
-      <a-video src="#vid1" position="0 0 0" width="1" height="1.777"></a-video>
-    </a-entity>
-    <a-entity mindar-image-target="targetIndex: 2">
-      <a-video src="#vid2" position="0 0 0" width="1" height="1.777"></a-video>
-    </a-entity>
-    <a-entity mindar-image-target="targetIndex: 3">
-      <a-video src="#vid3" position="0 0 0" width="1" height="1.777"></a-video>
-    </a-entity>
-    <a-entity mindar-image-target="targetIndex: 4">
-      <a-video src="#vid4" position="0 0 0" width="1" height="1.777"></a-video>
-    </a-entity>
-    <a-entity mindar-image-target="targetIndex: 5">
-      <a-video src="#vid5" position="0 0 0" width="1" height="1.777"></a-video>
-    </a-entity>
-    <a-entity mindar-image-target="targetIndex: 6">
-      <a-video src="#vid6" position="0 0 0" width="1" height="1.777"></a-video>
-    </a-entity>
-    <a-entity mindar-image-target="targetIndex: 7">
-      <a-video src="#vid7" position="0 0 0" width="1" height="1.777"></a-video>
-    </a-entity>
-    <a-entity mindar-image-target="targetIndex: 8">
-      <a-video src="#vid8" position="0 0 0" width="1" height="1.777"></a-video>
-    </a-entity>
-    <a-entity mindar-image-target="targetIndex: 9">
-      <a-video src="#vid9" position="0 0 0" width="1" height="1.777"></a-video>
-    </a-entity>
-    <a-entity mindar-image-target="targetIndex: 10">
-      <a-video src="#vid10" position="0 0 0" width="1" height="1.777"></a-video>
-    </a-entity>
-    <a-entity mindar-image-target="targetIndex: 11">
-      <a-video src="#vid11" position="0 0 0" width="1" height="1.777"></a-video>
-    </a-entity>
-
+    <a-entity mindar-image-target="targetIndex: 0"></a-entity>
+    <a-entity mindar-image-target="targetIndex: 1"></a-entity>
+    <a-entity mindar-image-target="targetIndex: 2"></a-entity>
+    <a-entity mindar-image-target="targetIndex: 3"></a-entity>
+    <a-entity mindar-image-target="targetIndex: 4"></a-entity>
+    <a-entity mindar-image-target="targetIndex: 5"></a-entity>
+    <a-entity mindar-image-target="targetIndex: 6"></a-entity>
+    <a-entity mindar-image-target="targetIndex: 7"></a-entity>
+    <a-entity mindar-image-target="targetIndex: 8"></a-entity>
+    <a-entity mindar-image-target="targetIndex: 9"></a-entity>
+    <a-entity mindar-image-target="targetIndex: 10"></a-entity>
+    <a-entity mindar-image-target="targetIndex: 11"></a-entity>
   </a-scene>
 
   <script>
@@ -207,13 +185,19 @@
       'Hoofdstuk IX', 'Hoofdstuk X', 'Slotwoord'
     ];
 
-    const tapBtn   = document.getElementById('tap-btn');
-    let currentVideo = null;
-    const debugEl  = document.getElementById('debug');
-    const hint     = document.getElementById('hint');
-    const label    = document.getElementById('chapter-label');
-    const loading  = document.getElementById('loading-screen');
-    const loadHint = document.getElementById('loading-hint');
+    const videoSrc = [
+      'intro.mp4', 'V1.mp4', 'V2.mp4', 'V3.mp4', 'V4.mp4', 'V5.mp4',
+      'V6.mp4', 'V7.mp4', 'V8.mp4', 'V9.mp4', 'V10.mp4', 'Slotwoord.mp4'
+    ];
+
+    const debugEl     = document.getElementById('debug');
+    const hint        = document.getElementById('hint');
+    const loading     = document.getElementById('loading-screen');
+    const loadHint    = document.getElementById('loading-hint');
+    const overlay     = document.getElementById('video-overlay');
+    const fsVideo     = document.getElementById('fullscreen-video');
+    const closeBtn    = document.getElementById('close-btn');
+    const videoChapter = document.getElementById('video-chapter');
 
     function log(msg) {
       const d = document.createElement('div');
@@ -226,14 +210,33 @@
 
     function hideLoading() {
       loading.classList.add('hidden');
-      log('Laadscherm verborgen');
     }
 
-    // Camera toestemming eerst
+    function playFullscreen(index) {
+      fsVideo.src = videoSrc[index];
+      fsVideo.load();
+      overlay.classList.add('active');
+      videoChapter.textContent = labels[index];
+      fsVideo.play().catch(() => {
+        // iOS fallback: wacht op tap
+        fsVideo.addEventListener('click', () => fsVideo.play(), { once: true });
+      });
+      log('Fullscreen: ' + labels[index]);
+    }
+
+    function stopFullscreen() {
+      fsVideo.pause();
+      fsVideo.src = '';
+      overlay.classList.remove('active');
+    }
+
+    closeBtn.addEventListener('click', stopFullscreen);
+
+    // Camera toestemming
     navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
       .then(stream => {
         stream.getTracks().forEach(t => t.stop());
-        log('Camera toestemming OK');
+        log('Camera OK');
         loadHint.textContent = 'AR wordt geladen\u2026';
       })
       .catch(err => {
@@ -244,30 +247,18 @@
     const sceneEl = document.querySelector('a-scene');
     sceneEl.addEventListener('arReady', () => { log('arReady'); hideLoading(); });
     sceneEl.addEventListener('arError', (e) => { log('arError: ' + JSON.stringify(e.detail)); });
-    sceneEl.addEventListener('loaded',  () => { log('scene loaded'); });
-    setTimeout(() => { if (!loading.classList.contains('hidden')) { log('timeout fallback'); hideLoading(); }}, 8000);
+    sceneEl.addEventListener('loaded', () => { log('scene loaded'); });
+    setTimeout(() => { if (!loading.classList.contains('hidden')) { log('timeout'); hideLoading(); }}, 8000);
 
+    // Marker detectie: alleen triggeren als overlay niet al open is
     for (let i = 0; i < 12; i++) {
       const target = document.querySelector(`[mindar-image-target="targetIndex: ${i}"]`);
-      const video  = document.getElementById(`vid${i}`);
 
       target.addEventListener('targetFound', () => {
         log('Marker ' + i + ' gevonden');
-        hint.style.opacity = '0';
-        label.textContent = labels[i];
-        label.classList.add('visible');
-        currentVideo = video;
-        video.muted = true;
-        video.play();
-        // Toon tapknop voor geluid
-        tapBtn.style.display = 'flex';
-      });
-
-      target.addEventListener('targetLost', () => {
-        video.pause();
-        video.currentTime = 0;
-        hint.style.opacity = '0.8';
-        label.classList.remove('visible');
+        if (!overlay.classList.contains('active')) {
+          playFullscreen(i);
+        }
       });
     }
   </script>
