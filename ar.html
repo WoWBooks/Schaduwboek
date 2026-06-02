@@ -17,149 +17,97 @@
       height: 100vh !important;
     }
 
-    #hint {
-      position: fixed;
-      bottom: 40px;
-      left: 0; right: 0;
-      text-align: center;
-      color: #c8a96e;
-      font-size: 0.7rem;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      z-index: 100;
-      opacity: 0.8;
-      pointer-events: none;
-    }
-
-    #loading-screen {
-      position: fixed;
-      inset: 0;
+    #loading {
+      position: fixed; inset: 0;
       background: #0a0a0a;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
       z-index: 9999;
       transition: opacity 1s ease;
     }
-    #loading-screen.hidden { opacity: 0; pointer-events: none; }
-
-    .loading-title {
-      color: #c8a96e;
-      font-size: 1rem;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      text-align: center;
-      padding: 0 32px;
-      margin-bottom: 8px;
+    #loading.hidden { opacity: 0; pointer-events: none; }
+    #loading h1 {
+      color: #c8a96e; font-size: 1rem; letter-spacing: 4px;
+      text-transform: uppercase; text-align: center; padding: 0 32px;
+      font-weight: normal; margin-bottom: 8px;
     }
-    .loading-sub {
-      color: #c8a96e;
-      font-size: 0.65rem;
-      letter-spacing: 3px;
-      opacity: 0.5;
-      margin-bottom: 40px;
-    }
-    #loading-hint {
-      color: #c8a96e;
-      font-size: 0.6rem;
-      letter-spacing: 2px;
-      opacity: 0.5;
-      text-align: center;
-      padding: 0 20px;
+    #loading p {
+      color: #c8a96e; font-size: 0.65rem; letter-spacing: 3px; opacity: 0.5;
     }
 
-    #video-overlay {
+    #hint {
+      position: fixed; bottom: 40px; left: 0; right: 0;
+      text-align: center; color: #c8a96e;
+      font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase;
+      z-index: 100; pointer-events: none;
+    }
+
+    #overlay {
       display: none;
-      position: fixed;
-      inset: 0;
-      background: #000;
-      z-index: 500;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      position: fixed; inset: 0;
+      background: #000; z-index: 500;
+      align-items: center; justify-content: center;
     }
-    #video-overlay.active { display: flex; }
+    #overlay.on { display: flex; }
 
-    #fullscreen-video {
-      width: 100vw;
-      height: 100vh;
+    #vid {
+      position: fixed; inset: 0;
+      width: 100vw; height: 100vh;
       object-fit: cover;
     }
 
-    #close-btn {
-      position: fixed;
-      top: 24px;
-      right: 24px;
-      width: 44px;
-      height: 44px;
-      background: rgba(0,0,0,0.6);
-      border: 1px solid #c8a96e88;
-      border-radius: 50%;
-      color: #c8a96e;
-      font-size: 1.2rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      z-index: 600;
-    }
-
-    #video-chapter {
-      position: fixed;
-      bottom: 32px;
-      left: 0; right: 0;
-      text-align: center;
-      color: #c8a96e;
-      font-size: 0.65rem;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      z-index: 600;
-      opacity: 0.7;
-    }
-
-    #tap-overlay {
+    #tap {
       display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 700;
-      align-items: center;
-      justify-content: center;
+      position: fixed; inset: 0; z-index: 600;
+      align-items: center; justify-content: center;
     }
-    #tap-overlay.active { display: flex; }
-    #tap-overlay button {
-      background: rgba(0,0,0,0.75);
+    #tap.on { display: flex; }
+    #tap button {
+      background: rgba(0,0,0,0.8);
       border: 1px solid #c8a96e;
       color: #c8a96e;
       font-family: Georgia, serif;
-      font-size: 0.85rem;
-      letter-spacing: 4px;
+      font-size: 0.9rem; letter-spacing: 4px;
       text-transform: uppercase;
-      padding: 18px 48px;
-      border-radius: 2px;
-      cursor: pointer;
+      padding: 20px 52px; border-radius: 2px; cursor: pointer;
     }
+
+    #close {
+      position: fixed; top: 24px; right: 24px;
+      width: 44px; height: 44px;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid #c8a96e88; border-radius: 50%;
+      color: #c8a96e; font-size: 1.2rem;
+      display: none; align-items: center; justify-content: center;
+      cursor: pointer; z-index: 700;
+    }
+    #close.on { display: flex; }
+
+    #label {
+      position: fixed; bottom: 32px; left: 0; right: 0;
+      text-align: center; color: #c8a96e;
+      font-size: 0.65rem; letter-spacing: 4px; text-transform: uppercase;
+      z-index: 600; opacity: 0; transition: opacity 0.4s;
+      pointer-events: none;
+    }
+    #label.on { opacity: 0.8; }
   </style>
 </head>
 <body>
 
-  <div id="loading-screen">
-    <div class="loading-title">Wat je schaduw je wil vertellen</div>
-    <div class="loading-sub">Words of Wholeness</div>
-    <div id="loading-hint">Camera wordt gestart&hellip;</div>
+  <div id="loading">
+    <h1>Wat je schaduw je wil vertellen</h1>
+    <p>Words of Wholeness</p>
   </div>
 
   <div id="hint">Richt de camera op een pagina in het boek</div>
 
-  <div id="video-overlay">
-    <video id="fullscreen-video" playsinline webkit-playsinline></video>
-    <div id="close-btn">✕</div>
-    <div id="video-chapter"></div>
+  <div id="overlay">
+    <video id="vid" playsinline webkit-playsinline></video>
   </div>
-
-  <div id="tap-overlay">
-    <button id="tap-btn">▶&nbsp; Tik om te starten</button>
-  </div>
+  <div id="tap"><button>▶&nbsp;&nbsp;Tik om te starten</button></div>
+  <div id="close">✕</div>
+  <div id="label"></div>
 
   <a-scene
     mindar-image="imageTargetSrc: assets/targets.mind; autoStart: true; uiLoading: no; uiError: no; uiScanning: no;"
@@ -167,93 +115,80 @@
     renderer="colorManagement: true; antialias: false"
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: false">
-
     <a-assets></a-assets>
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-
-    <a-entity mindar-image-target="targetIndex: 0"><a-plane width="1" height="1" opacity="0" material="transparent: true"></a-plane></a-entity>
-    <a-entity mindar-image-target="targetIndex: 1"><a-plane width="1" height="1" opacity="0" material="transparent: true"></a-plane></a-entity>
-    <a-entity mindar-image-target="targetIndex: 2"><a-plane width="1" height="1" opacity="0" material="transparent: true"></a-plane></a-entity>
-    <a-entity mindar-image-target="targetIndex: 3"><a-plane width="1" height="1" opacity="0" material="transparent: true"></a-plane></a-entity>
-    <a-entity mindar-image-target="targetIndex: 4"><a-plane width="1" height="1" opacity="0" material="transparent: true"></a-plane></a-entity>
-    <a-entity mindar-image-target="targetIndex: 5"><a-plane width="1" height="1" opacity="0" material="transparent: true"></a-plane></a-entity>
-    <a-entity mindar-image-target="targetIndex: 6"><a-plane width="1" height="1" opacity="0" material="transparent: true"></a-plane></a-entity>
-    <a-entity mindar-image-target="targetIndex: 7"><a-plane width="1" height="1" opacity="0" material="transparent: true"></a-plane></a-entity>
-    <a-entity mindar-image-target="targetIndex: 8"><a-plane width="1" height="1" opacity="0" material="transparent: true"></a-plane></a-entity>
-    <a-entity mindar-image-target="targetIndex: 9"><a-plane width="1" height="1" opacity="0" material="transparent: true"></a-plane></a-entity>
-    <a-entity mindar-image-target="targetIndex: 10"><a-plane width="1" height="1" opacity="0" material="transparent: true"></a-plane></a-entity>
-    <a-entity mindar-image-target="targetIndex: 11"><a-plane width="1" height="1" opacity="0" material="transparent: true"></a-plane></a-entity>
+    <a-entity mindar-image-target="targetIndex: 0"><a-plane width="1" height="1" opacity="0" material="transparent:true"></a-plane></a-entity>
+    <a-entity mindar-image-target="targetIndex: 1"><a-plane width="1" height="1" opacity="0" material="transparent:true"></a-plane></a-entity>
+    <a-entity mindar-image-target="targetIndex: 2"><a-plane width="1" height="1" opacity="0" material="transparent:true"></a-plane></a-entity>
+    <a-entity mindar-image-target="targetIndex: 3"><a-plane width="1" height="1" opacity="0" material="transparent:true"></a-plane></a-entity>
+    <a-entity mindar-image-target="targetIndex: 4"><a-plane width="1" height="1" opacity="0" material="transparent:true"></a-plane></a-entity>
+    <a-entity mindar-image-target="targetIndex: 5"><a-plane width="1" height="1" opacity="0" material="transparent:true"></a-plane></a-entity>
+    <a-entity mindar-image-target="targetIndex: 6"><a-plane width="1" height="1" opacity="0" material="transparent:true"></a-plane></a-entity>
+    <a-entity mindar-image-target="targetIndex: 7"><a-plane width="1" height="1" opacity="0" material="transparent:true"></a-plane></a-entity>
+    <a-entity mindar-image-target="targetIndex: 8"><a-plane width="1" height="1" opacity="0" material="transparent:true"></a-plane></a-entity>
+    <a-entity mindar-image-target="targetIndex: 9"><a-plane width="1" height="1" opacity="0" material="transparent:true"></a-plane></a-entity>
+    <a-entity mindar-image-target="targetIndex: 10"><a-plane width="1" height="1" opacity="0" material="transparent:true"></a-plane></a-entity>
+    <a-entity mindar-image-target="targetIndex: 11"><a-plane width="1" height="1" opacity="0" material="transparent:true"></a-plane></a-entity>
   </a-scene>
 
   <script>
-    const labels = [
-      'Intro',
-      'Hoofdstuk I', 'Hoofdstuk II', 'Hoofdstuk III', 'Hoofdstuk IV',
-      'Hoofdstuk V', 'Hoofdstuk VI', 'Hoofdstuk VII', 'Hoofdstuk VIII',
-      'Hoofdstuk IX', 'Hoofdstuk X', 'Slotwoord'
-    ];
+    const LABELS = ['Intro','Hoofdstuk I','Hoofdstuk II','Hoofdstuk III','Hoofdstuk IV','Hoofdstuk V','Hoofdstuk VI','Hoofdstuk VII','Hoofdstuk VIII','Hoofdstuk IX','Hoofdstuk X','Slotwoord'];
+    const VIDEOS = ['intro.mp4','V1.mp4','V2.mp4','V3.mp4','V4.mp4','V5.mp4','V6.mp4','V7.mp4','V8.mp4','V9.mp4','V10.mp4','Slotwoord.mp4'];
 
-    const videoSrc = [
-      'intro.mp4', 'V1.mp4', 'V2.mp4', 'V3.mp4', 'V4.mp4', 'V5.mp4',
-      'V6.mp4', 'V7.mp4', 'V8.mp4', 'V9.mp4', 'V10.mp4', 'Slotwoord.mp4'
-    ];
+    const loading = document.getElementById('loading');
+    const overlay = document.getElementById('overlay');
+    const vid     = document.getElementById('vid');
+    const tap     = document.getElementById('tap');
+    const close   = document.getElementById('close');
+    const label   = document.getElementById('label');
 
-    const loading      = document.getElementById('loading-screen');
-    const loadHint     = document.getElementById('loading-hint');
-    const overlay      = document.getElementById('video-overlay');
-    const fsVideo      = document.getElementById('fullscreen-video');
-    const closeBtn     = document.getElementById('close-btn');
-    const videoChapter = document.getElementById('video-chapter');
-    const tapOverlay   = document.getElementById('tap-overlay');
-    const tapBtn       = document.getElementById('tap-btn');
+    // Camera toestemming
+    navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false})
+      .then(s => s.getTracks().forEach(t => t.stop()))
+      .catch(() => {});
 
-    function hideLoading() {
-      loading.classList.add('hidden');
+    // Laadscherm verbergen
+    const scene = document.querySelector('a-scene');
+    scene.addEventListener('arReady', () => loading.classList.add('hidden'));
+    setTimeout(() => loading.classList.add('hidden'), 8000);
+
+    // Video starten
+    function show(i) {
+      vid.src = VIDEOS[i];
+      overlay.classList.add('on');
+      close.classList.add('on');
+      label.textContent = LABELS[i];
+      label.classList.add('on');
+      vid.play().then(() => {
+        tap.classList.remove('on');
+      }).catch(() => {
+        tap.classList.add('on');
+      });
     }
 
-    function playFullscreen(index) {
-      fsVideo.src = videoSrc[index];
-      overlay.classList.add('active');
-      videoChapter.textContent = labels[index];
-      tapOverlay.classList.add('active');
+    // Sluiten
+    function hide() {
+      vid.pause();
+      vid.src = '';
+      overlay.classList.remove('on');
+      close.classList.remove('on');
+      tap.classList.remove('on');
+      label.classList.remove('on');
     }
 
-    tapBtn.addEventListener('click', () => {
-      fsVideo.play();
-      tapOverlay.classList.remove('active');
+    close.addEventListener('click', hide);
+    document.getElementById('tap').querySelector('button').addEventListener('click', () => {
+      vid.play();
+      tap.classList.remove('on');
     });
 
-    function stopFullscreen() {
-      fsVideo.pause();
-      fsVideo.src = '';
-      overlay.classList.remove('active');
-      tapOverlay.classList.remove('active');
-    }
-
-    closeBtn.addEventListener('click', stopFullscreen);
-
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
-      .then(stream => {
-        stream.getTracks().forEach(t => t.stop());
-        loadHint.textContent = 'AR wordt geladen\u2026';
-      })
-      .catch(() => {
-        loadHint.textContent = 'Cameratoegang geweigerd';
-      });
-
-    const sceneEl = document.querySelector('a-scene');
-    sceneEl.addEventListener('arReady', hideLoading);
-    setTimeout(() => { if (!loading.classList.contains('hidden')) hideLoading(); }, 8000);
-
+    // Markers
     for (let i = 0; i < 12; i++) {
-      const target = document.querySelector(`[mindar-image-target="targetIndex: ${i}"]`);
-      target.addEventListener('targetFound', () => {
-        if (!overlay.classList.contains('active')) {
-          playFullscreen(i);
-        }
-      });
+      document.querySelector(`[mindar-image-target="targetIndex: ${i}"]`)
+        .addEventListener('targetFound', () => {
+          if (!overlay.classList.contains('on')) show(i);
+        });
     }
   </script>
-
 </body>
 </html>
