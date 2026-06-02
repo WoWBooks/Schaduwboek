@@ -112,23 +112,24 @@
   <div id="tap-btn" style="
     display: none;
     position: fixed;
-    inset: 0;
-    align-items: center;
-    justify-content: center;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 200;
   ">
-    <button style="
+    <button onclick="if(currentVideo){currentVideo.muted=false;currentVideo.volume=1;} document.getElementById('tap-btn').style.display='none';" style="
       background: #c8a96e;
       color: #0a0a0a;
       border: none;
-      padding: 16px 40px;
+      padding: 14px 32px;
       font-family: Georgia, serif;
-      font-size: 1rem;
+      font-size: 0.8rem;
       letter-spacing: 3px;
       text-transform: uppercase;
       border-radius: 2px;
       cursor: pointer;
-    ">Tik om te starten</button>
+      white-space: nowrap;
+    ">&#9654; Tik voor geluid</button>
   </div>
 
   <div id="debug"></div>
@@ -207,6 +208,7 @@
     ];
 
     const tapBtn   = document.getElementById('tap-btn');
+    let currentVideo = null;
     const debugEl  = document.getElementById('debug');
     const hint     = document.getElementById('hint');
     const label    = document.getElementById('chapter-label');
@@ -254,18 +256,11 @@
         hint.style.opacity = '0';
         label.textContent = labels[i];
         label.classList.add('visible');
-        // iOS vereist gebruikersinteractie voor autoplay met geluid
-        const playPromise = video.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(() => {
-            // Autoplay geblokkeerd, toon tapknop
-            tapBtn.style.display = 'flex';
-            tapBtn.onclick = () => {
-              video.play();
-              tapBtn.style.display = 'none';
-            };
-          });
-        }
+        currentVideo = video;
+        video.muted = true;
+        video.play();
+        // Toon tapknop voor geluid
+        tapBtn.style.display = 'flex';
       });
 
       target.addEventListener('targetLost', () => {
