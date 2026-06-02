@@ -109,6 +109,28 @@
     <div id="loading-hint">Camera wordt gestart&hellip;</div>
   </div>
 
+  <div id="tap-btn" style="
+    display: none;
+    position: fixed;
+    inset: 0;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+  ">
+    <button style="
+      background: #c8a96e;
+      color: #0a0a0a;
+      border: none;
+      padding: 16px 40px;
+      font-family: Georgia, serif;
+      font-size: 1rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      border-radius: 2px;
+      cursor: pointer;
+    ">Tik om te starten</button>
+  </div>
+
   <div id="debug"></div>
   <div id="chapter-label"></div>
   <div id="hint">Richt de camera op een pagina in het boek</div>
@@ -184,6 +206,7 @@
       'Hoofdstuk IX', 'Hoofdstuk X', 'Slotwoord'
     ];
 
+    const tapBtn   = document.getElementById('tap-btn');
     const debugEl  = document.getElementById('debug');
     const hint     = document.getElementById('hint');
     const label    = document.getElementById('chapter-label');
@@ -228,10 +251,21 @@
 
       target.addEventListener('targetFound', () => {
         log('Marker ' + i + ' gevonden');
-        video.play();
         hint.style.opacity = '0';
         label.textContent = labels[i];
         label.classList.add('visible');
+        // iOS vereist gebruikersinteractie voor autoplay met geluid
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            // Autoplay geblokkeerd, toon tapknop
+            tapBtn.style.display = 'flex';
+            tapBtn.onclick = () => {
+              video.play();
+              tapBtn.style.display = 'none';
+            };
+          });
+        }
       });
 
       target.addEventListener('targetLost', () => {
