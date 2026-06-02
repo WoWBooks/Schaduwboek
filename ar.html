@@ -176,7 +176,6 @@
       'V6.mp4', 'V7.mp4', 'V8.mp4', 'V9.mp4', 'V10.mp4', 'Slotwoord.mp4'
     ];
 
-    const debugEl     = document.getElementById('debug');
     const hint        = document.getElementById('hint');
     const loading     = document.getElementById('loading-screen');
     const loadHint    = document.getElementById('loading-hint');
@@ -220,10 +219,9 @@
       });
 
     const sceneEl = document.querySelector('a-scene');
-    sceneEl.addEventListener('arReady', () => { log('arReady'); hideLoading(); });
-    sceneEl.addEventListener('arError', (e) => { log('arError: ' + JSON.stringify(e.detail)); });
-    sceneEl.addEventListener('loaded', () => { log('scene loaded'); });
-    setTimeout(() => { if (!loading.classList.contains('hidden')) { log('timeout'); hideLoading(); }}, 8000);
+    sceneEl.addEventListener('arReady', () => { hideLoading(); });
+    sceneEl.addEventListener('loaded', () => {});
+    setTimeout(() => { if (!loading.classList.contains('hidden')) { hideLoading(); }}, 8000);
 
     // Marker detectie: alleen triggeren als overlay niet al open is
     for (let i = 0; i < 12; i++) {
