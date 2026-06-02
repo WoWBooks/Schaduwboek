@@ -118,20 +118,7 @@
       opacity: 0.7;
     }
 
-    #debug {
-      position: fixed;
-      top: 60px;
-      left: 10px; right: 10px;
-      background: rgba(0,0,0,0.85);
-      color: #c8a96e;
-      font-family: monospace;
-      font-size: 11px;
-      padding: 8px;
-      z-index: 9998;
-      max-height: 120px;
-      overflow-y: auto;
-      border: 1px solid #c8a96e44;
-    }
+
   </style>
 </head>
 <body>
@@ -142,7 +129,6 @@
     <div id="loading-hint">Camera wordt gestart&hellip;</div>
   </div>
 
-  <div id="debug"></div>
   <div id="hint">Richt de camera op een pagina in het boek</div>
 
   <!-- Fullscreen video overlay -->
@@ -199,14 +185,6 @@
     const closeBtn    = document.getElementById('close-btn');
     const videoChapter = document.getElementById('video-chapter');
 
-    function log(msg) {
-      const d = document.createElement('div');
-      d.textContent = new Date().toLocaleTimeString() + ' ' + msg;
-      debugEl.appendChild(d);
-      debugEl.scrollTop = debugEl.scrollHeight;
-    }
-
-    window.onerror = (msg, src, line) => log('FOUT: ' + msg);
 
     function hideLoading() {
       loading.classList.add('hidden');
@@ -221,7 +199,6 @@
         // iOS fallback: wacht op tap
         fsVideo.addEventListener('click', () => fsVideo.play(), { once: true });
       });
-      log('Fullscreen: ' + labels[index]);
     }
 
     function stopFullscreen() {
@@ -236,12 +213,10 @@
     navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
       .then(stream => {
         stream.getTracks().forEach(t => t.stop());
-        log('Camera OK');
-        loadHint.textContent = 'AR wordt geladen\u2026';
+          loadHint.textContent = 'AR wordt geladen\u2026';
       })
       .catch(err => {
-        log('Camera FOUT: ' + err.message);
-        loadHint.textContent = 'Cameratoegang geweigerd';
+          loadHint.textContent = 'Cameratoegang geweigerd';
       });
 
     const sceneEl = document.querySelector('a-scene');
@@ -255,8 +230,7 @@
       const target = document.querySelector(`[mindar-image-target="targetIndex: ${i}"]`);
 
       target.addEventListener('targetFound', () => {
-        log('Marker ' + i + ' gevonden');
-        if (!overlay.classList.contains('active')) {
+          if (!overlay.classList.contains('active')) {
           playFullscreen(i);
         }
       });
