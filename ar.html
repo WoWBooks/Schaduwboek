@@ -69,7 +69,26 @@
       padding: 0 20px;
     }
 
-    /* Fullscreen video overlay */
+    #tap-to-play {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 700;
+    }
+    #tap-to-play button {
+      background: rgba(0,0,0,0.7);
+      border: 1px solid #c8a96e;
+      color: #c8a96e;
+      font-family: Georgia, serif;
+      font-size: 0.9rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      padding: 18px 48px;
+      border-radius: 2px;
+      cursor: pointer;
+    }
     #video-overlay {
       display: none;
       position: fixed;
@@ -129,11 +148,41 @@
     <div id="loading-hint">Camera wordt gestart&hellip;</div>
   </div>
 
+  <!-- iOS autoplay unlock -->
+  <div id="start-screen" style="
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #0a0a0a;
+    z-index: 10000;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+  ">
+    <div style="color: #c8a96e; font-size: 1rem; letter-spacing: 4px; text-transform: uppercase; text-align: center; padding: 0 32px;">Wat je schaduw je wil vertellen</div>
+    <div style="color: #c8a96e; font-size: 0.65rem; letter-spacing: 3px; opacity: 0.5;">Words of Wholeness</div>
+    <button id="start-btn" style="
+      background: transparent;
+      border: 1px solid #c8a96e;
+      color: #c8a96e;
+      font-family: Georgia, serif;
+      font-size: 0.85rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      padding: 16px 40px;
+      border-radius: 2px;
+      cursor: pointer;
+      margin-top: 16px;
+    ">Start de leeservaring</button>
+  </div>
+
   <div id="hint">Richt de camera op een pagina in het boek</div>
 
   <!-- Fullscreen video overlay -->
   <div id="video-overlay">
     <video id="fullscreen-video" playsinline webkit-playsinline></video>
+    <div id="tap-to-play"><button>▶ Tik om te starten</button></div>
     <div id="close-btn">✕</div>
     <div id="video-chapter"></div>
   </div>
@@ -183,7 +232,34 @@
     const fsVideo     = document.getElementById('fullscreen-video');
     const closeBtn    = document.getElementById('close-btn');
     const videoChapter = document.getElementById('video-chapter');
+    const tapToPlay   = document.getElementById('tap-to-play');
+    const startScreen = document.getElementById('start-screen');
+    const startBtn    = document.getElementById('start-btn');
 
+    // iOS autoplay unlock: eerst een tap vereisen
+    startScreen.style.display = 'flex';
+    loading.style.display = 'none';
+
+    startBtn.addEventListener('click', () => {
+      // Unlock audio/video door gebruikersinteractie
+      fsVideo.src = 'intro.mp4';
+      fsVideo.muted = true;
+      fsVideo.play().then(() => {
+        fsVideo.pause();
+        fsVideo.muted = false;
+        fsVideo.src = '';
+      }).catch(() => {});
+      startScreen.style.display = 'none';
+      loading.style.display = 'flex';
+      initAR();
+    });
+
+    function initAR() {
+
+    tapToPlay.addEventListener('click', () => {
+      fsVideo.play();
+      tapToPlay.style.display = 'none';
+    });
 
     function hideLoading() {
       loading.classList.add('hidden');
@@ -194,9 +270,11 @@
       fsVideo.load();
       overlay.classList.add('active');
       videoChapter.textContent = labels[index];
-      fsVideo.play().catch(() => {
-        // iOS fallback: wacht op tap
-        fsVideo.addEventListener('click', () => fsVideo.play(), { once: true });
+      tapToPlay.style.display = 'flex';
+      fsVideo.play().then(() => {
+        tapToPlay.style.display = 'none';
+      }).catch(() => {
+        tapToPlay.style.display = 'flex';
       });
     }
 
@@ -233,6 +311,7 @@
         }
       });
     }
+    } // einde initAR
   </script>
 
 </body>
