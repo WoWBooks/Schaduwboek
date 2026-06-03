@@ -105,7 +105,7 @@
 
     const sceneEl = document.querySelector('a-scene');
     sceneEl.addEventListener('arReady', () => { hideLoading(); });
-    sceneEl.addEventListener('loaded', () => log('loaded'));
+    sceneEl.addEventListener('loaded', () => {});
     setTimeout(() => { if (!loading.classList.contains('hidden')) { hideLoading(); }}, 8000);
 
     for (let i = 0; i < 12; i++) {
