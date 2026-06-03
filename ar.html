@@ -94,13 +94,13 @@
       chapterLabel.textContent = labels[index];
       chapterLabel.classList.add('visible');
       const tapBtn = document.getElementById('tap-btn');
-      tapBtn.style.display = 'none';
-      fsVideo.play()
-        .then(() => { log('speelt'); })
-        .catch(e => {
-          log('play fout: ' + e.message);
-          tapBtn.style.display = 'flex';
-        });
+      tapBtn.style.cssText = 'display:flex; position:fixed; inset:0; z-index:650; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);';
+      fsVideo.play().then(() => {
+        log('speelt');
+        tapBtn.style.display = 'none';
+      }).catch(e => {
+        log('play fout: ' + e.message);
+      });
     }
 
     function stopFullscreen() {
