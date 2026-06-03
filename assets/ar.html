@@ -23,7 +23,7 @@
     #fullscreen-video { width: 100vw; height: 100vh; object-fit: cover; }
     #close-btn { position: fixed; top: 24px; right: 24px; width: 44px; height: 44px; background: rgba(0,0,0,0.6); border: 1px solid #c8a96e88; border-radius: 50%; color: #c8a96e; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 600; }
     #video-chapter { position: fixed; bottom: 32px; left: 0; right: 0; text-align: center; color: #c8a96e; font-size: 0.65rem; letter-spacing: 4px; text-transform: uppercase; z-index: 600; opacity: 0.7; }
-    #debug { position: fixed; top: 60px; left: 10px; right: 10px; background: rgba(0,0,0,0.85); color: #c8a96e; font-family: monospace; font-size: 11px; padding: 8px; z-index: 9998; max-height: 160px; overflow-y: auto; border: 1px solid #c8a96e44; }
+
   </style>
 </head>
 <body>
@@ -32,7 +32,6 @@
     <div class="loading-sub">Words of Wholeness</div>
     <div id="loading-hint">Camera wordt gestart&hellip;</div>
   </div>
-  <div id="debug"></div>
   <div id="chapter-label"></div>
   <div id="hint">Richt de camera op een pagina in het boek</div>
   <div id="video-overlay">
@@ -65,9 +64,8 @@
     <a-entity mindar-image-target="targetIndex: 11"><a-plane width="1" height="1" opacity="0" material="transparent: true"></a-plane></a-entity>
   </a-scene>
   <script>
-    const labels = ['Hoofdstuk I','Hoofdstuk II','Hoofdstuk III','Hoofdstuk IV','Hoofdstuk V','Hoofdstuk VI','Hoofdstuk VII','Hoofdstuk VIII','Hoofdstuk IX','Hoofdstuk X','Slotwoord','Intro'];
-    const videoSrc = ['V1.mp4','V2.mp4','V3.mp4','V4.mp4','V5.mp4','V6.mp4','V7.mp4','V8.mp4','V9.mp4','V10.mp4','Slotwoord.mp4','intro.mp4'];
-    const debugEl = document.getElementById('debug');
+    const labels = ['Intro','Hoofdstuk I','Hoofdstuk II','Hoofdstuk III','Hoofdstuk IV','Hoofdstuk V','Hoofdstuk VI','Hoofdstuk VII','Hoofdstuk VIII','Hoofdstuk IX','Hoofdstuk X','Slotwoord'];
+    const videoSrc = ['intro.mp4','V1.mp4','V2.mp4','V3.mp4','V4.mp4','V5.mp4','V6.mp4','V7.mp4','V8.mp4','V9.mp4','V10.mp4','Slotwoord.mp4'];
     const loading = document.getElementById('loading-screen');
     const loadHint = document.getElementById('loading-hint');
     const overlay = document.getElementById('video-overlay');
@@ -76,18 +74,10 @@
     const videoChapter = document.getElementById('video-chapter');
     const chapterLabel = document.getElementById('chapter-label');
 
-    function log(msg) {
-      const d = document.createElement('div');
-      d.textContent = new Date().toLocaleTimeString() + ' ' + msg;
-      debugEl.appendChild(d);
-      debugEl.scrollTop = debugEl.scrollHeight;
-    }
-    window.onerror = (msg, src, line) => log('FOUT: ' + msg);
 
     function hideLoading() { loading.classList.add('hidden'); }
 
     function playFullscreen(index) {
-      log('play: ' + videoSrc[index]);
       fsVideo.src = videoSrc[index];
       overlay.classList.add('active');
       videoChapter.textContent = labels[index];
@@ -96,10 +86,8 @@
       const tapBtn = document.getElementById('tap-btn');
       tapBtn.style.cssText = 'display:flex; position:fixed; inset:0; z-index:650; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);';
       fsVideo.play().then(() => {
-        log('speelt');
         tapBtn.style.display = 'none';
       }).catch(e => {
-        log('play fout: ' + e.message);
       });
     }
 
@@ -112,18 +100,17 @@
     closeBtn.addEventListener('click', stopFullscreen);
 
     navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false})
-      .then(s => { s.getTracks().forEach(t => t.stop()); log('camera OK'); loadHint.textContent = 'AR wordt geladen…'; })
-      .catch(e => { log('camera fout: ' + e.message); });
+      .then(s => { s.getTracks().forEach(t => t.stop()); loadHint.textContent = 'AR wordt geladen…'; })
+      .catch(e => { });
 
     const sceneEl = document.querySelector('a-scene');
-    sceneEl.addEventListener('arReady', () => { log('arReady'); hideLoading(); });
+    sceneEl.addEventListener('arReady', () => { hideLoading(); });
     sceneEl.addEventListener('loaded', () => log('loaded'));
-    setTimeout(() => { if (!loading.classList.contains('hidden')) { log('timeout'); hideLoading(); }}, 8000);
+    setTimeout(() => { if (!loading.classList.contains('hidden')) { hideLoading(); }}, 8000);
 
     for (let i = 0; i < 12; i++) {
       document.querySelector(`[mindar-image-target="targetIndex: ${i}"]`)
         .addEventListener('targetFound', () => {
-          log('marker ' + i + ' gevonden');
           if (!overlay.classList.contains('active')) playFullscreen(i);
         });
     }
